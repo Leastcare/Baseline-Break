@@ -360,7 +360,6 @@ canvas { display: block; }
   align-items: flex-start;
   flex-shrink: 0;
 }
-.dt-reading-block {}
 .dt-reading-label { font-size: 0.7rem; color: var(--dt-text-muted); }
 .dt-reading-date  { font-size: 0.8rem; font-weight: 600; color: var(--dt-text); margin-top: 4px; }
 .dt-reading-time  { font-size: 0.7rem; color: var(--dt-text-muted); }
