@@ -22,11 +22,11 @@ Real USGS data → Build site-specific baseline → Detect break → Explain it 
 
 ## Demo
 
-The app runs live at: *(link after deployment)*
+🌐 **Live app: https://baseline-break.onrender.com**
 
-Desktop (wide screen) shows the full monitoring atlas with map, trend chart, and evidence panel.
-Mobile (narrow screen) shows a citizen-science check-in flow with gamification.
-Same data, same backend, different experience — it switches automatically at 900px.
+The app shows real-time USGS river monitoring data. First load takes ~10 seconds while it fetches live data from the USGS API.
+
+*(Screenshots below)*
 
 ---
 
@@ -132,7 +132,7 @@ Every alert requires human review. The system shows evidence, not verdicts.
 
 ```bash
 git clone https://github.com/Leastcare/Baseline-Break.git
-cd baseline-break
+cd Baseline-Break
 pip install -r requirements.txt
 cp .env.example .env
 python app.py
