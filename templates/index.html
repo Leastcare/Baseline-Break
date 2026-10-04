@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamWatch Atlas · Baseline-Break</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- App styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DESKTOP LAYOUT  (≥ 900 px)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="desktop-shell" id="desktopShell">
+
+  <!-- ── Top navigation bar ── -->
+  <header class="dt-nav">
+    <div class="dt-brand">
+      <div class="dt-brand-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="15" stroke="#2dd4bf" stroke-width="1.5"/>
+          <path d="M6 20 Q10 14 16 18 Q22 22 26 14" stroke="#2dd4bf" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="4" fill="#2dd4bf" opacity="0.25"/>
+          <circle cx="16" cy="16" r="2" fill="#2dd4bf"/>
+        </svg>
+      </div>
+      <div>
+        <span class="dt-brand-name">StreamWatch <span class="dt-brand-accent">Atlas</span></span>
+        <div class="dt-brand-tagline">CLEANER STREAMS. HEALTHIER COMMUNITIES.</div>
+      </div>
+    </div>
+
+    <nav class="dt-nav-links">
+      <a href="#" class="dt-nav-link active" data-page="overview">
+        <svg viewBox="0 0 20 20"><path d="M3 9l7-7 7 7v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9z" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Overview
+      </a>
+      <a href="#" class="dt-nav-link" data-page="sites">
+        <svg viewBox="0 0 20 20"><circle cx="10" cy="8" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10 2C6.69 2 4 4.69 4 8c0 4.42 6 10 6 10s6-5.58 6-10c0-3.31-2.69-6-6-6z" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Sites
+      </a>
+      <a href="#" class="dt-nav-link" data-page="trends">
+        <svg viewBox="0 0 20 20"><polyline points="3,14 8,8 12,11 17,5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Trends
+      </a>
+      <a href="#" class="dt-nav-link" data-page="community">
+        <svg viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM6 8a2 2 0 11-4 0 2 2 0 014 0zM15.93 17a9 9 0 00-11.86 0" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Community
+      </a>
+      <a href="#" class="dt-nav-link" data-page="reports">
+        <svg viewBox="0 0 20 20"><path d="M4 4h12v12H4V4zm3 4h6m-6 3h4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="dt-nav-meta">
+      <div class="dt-weather-widget">
+        <svg viewBox="0 0 24 24" class="dt-weather-icon"><circle cx="12" cy="12" r="4" fill="#fbbf24"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#fbbf24" stroke-width="1.5"/></svg>
+        <div>
+          <div class="dt-weather-temp" id="dtWeatherTemp">28°C</div>
+          <div class="dt-weather-desc" id="dtWeatherDesc">Mostly clear</div>
+        </div>
+      </div>
+      <div class="dt-datetime-widget">
+        <svg viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M2 8h16M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.5"/></svg>
+        <div>
+          <div class="dt-date" id="dtDate">Oct 25, 2026</div>
+          <div class="dt-time" id="dtTime">10:42 AM</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main content grid ── -->
+  <main class="dt-main">
+
+    <!-- LEFT: Map panel -->
+    <section class="dt-map-panel">
+      <div class="dt-panel-header">
+        <div class="dt-panel-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#2dd4bf" opacity="0.6"/></svg>
+        </div>
+        <div>
+          <div class="dt-panel-title">Stream Network</div>
+          <div class="dt-panel-sub">Explore sites and check the latest observations.</div>
+        </div>
+        <div class="dt-map-type-btns">
+          <button class="dt-map-btn active" id="btnMap">Map</button>
+          <button class="dt-map-btn" id="btnSatellite">Satellite</button>
+          <button class="dt-map-btn" id="btnTerrain">Terrain</button>
+        </div>
+      </div>
+
+      <!-- Leaflet map container -->
+      <div id="dtMap" class="dt-map-container"></div>
+
+      <!-- Map legend -->
+      <div class="dt-map-legend">
+        <div class="dt-legend-item">
+          <span class="dt-legend-dot normal"></span> Normal
+          <svg class="dt-legend-arrow" viewBox="0 0 12 12"><path d="M4 6h6M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </div>
+        <div class="dt-legend-item">
+          <span class="dt-legend-dot recheck"></span> Needs recheck
+          <svg class="dt-legend-arrow" viewBox="0 0 12 12"><path d="M4 6h6M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </div>
+        <div class="dt-legend-item">
+          <span class="dt-legend-dot nodata"></span> No recent data
+          <svg class="dt-legend-arrow" viewBox="0 0 12 12"><path d="M4 6h6M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Data column -->
+    <section class="dt-data-col">
+
+      <!-- Site card -->
+      <div class="dt-site-card" id="dtSiteCard">
+        <div class="dt-site-img-wrap">
+          <img src="{{ url_for('static', filename='images/site-urban-stream.jpg') }}"
+               alt="Site photo"
+               class="dt-site-img"
+               onerror="this.style.display='none'; this.parentNode.classList.add('dt-site-img-fallback')" />
+        </div>
+        <div class="dt-site-info">
+          <div class="dt-site-name" id="dtSiteName">Site 3 – Urban Stream</div>
+          <div class="dt-site-location" id="dtSiteLocation">Central District</div>
+          <div class="dt-site-badge" id="dtSiteBadge">
+            <span class="badge badge-recheck" id="dtStatusBadge">
+              ⚠ Needs recheck
+            </span>
+          </div>
+        </div>
+        <div class="dt-site-reading">
+          <div class="dt-reading-block">
+            <div class="dt-reading-label">Last reading</div>
+            <div class="dt-reading-date" id="dtReadingDate">Oct 25, 2026</div>
+            <div class="dt-reading-time" id="dtReadingTime">10:30 AM</div>
+          </div>
+          <div class="dt-reading-block">
+            <div class="dt-reading-label">Water clarity</div>
+            <div class="dt-reading-value" id="dtReadingValue"><span id="dtReadingNumber">—</span> <span class="dt-reading-unit" id="dtReadingUnit"></span></div>
+            <div class="dt-reading-delta" id="dtReadingDelta">
+              <svg viewBox="0 0 12 12"><path d="M6 10V2M2 6l4-4 4 4" stroke="#34d399" stroke-width="1.5" fill="none"/></svg>
+              <span id="dtDeltaText">+120%</span>
+              <span class="dt-delta-label">Higher than usual</span>
+            </div>
+          </div>
+        </div>
+        <button class="dt-site-arrow" id="dtSiteArrow">›</button>
+      </div>
+
+      <!-- Trend chart card -->
+      <div class="dt-chart-card">
+        <div class="dt-chart-header">
+          <div class="dt-chart-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 0v10l6 3" stroke="#2dd4bf" stroke-width="1.5" fill="none"/></svg>
+          </div>
+          <div>
+            <div class="dt-chart-title" id="dtChartTitle">Water Clarity Trend</div>
+            <div class="dt-chart-sub" id="dtChartSub">Last 14 days · Site 3</div>
+          </div>
+          <div class="dt-chart-controls">
+            <div class="dt-range-select">
+              <svg viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+              <select id="dtRangeSelect" class="dt-range-dropdown">
+                <option value="7">7 days</option>
+                <option value="14" selected>14 days</option>
+                <option value="30">30 days</option>
+                <option value="90">90 days</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="dt-chart-legend-row">
+          <span class="dt-cl-item"><span class="dt-cl-dot observed"></span> Observed value</span>
+          <span class="dt-cl-item"><span class="dt-cl-dash normal-range"></span> Normal range</span>
+          <span class="dt-cl-item"><span class="dt-cl-dot alert-dot"></span> Alert</span>
+        </div>
+        <div class="dt-chart-wrap">
+          <canvas id="dtTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bottom row -->
+      <div class="dt-bottom-row">
+
+        <!-- Why this matters -->
+        <div class="dt-why-card">
+          <div class="dt-why-header">
+            <div class="dt-why-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6 2 2 6.5 2 12s4 10 10 10 10-4.5 10-10S18 2 12 2zm0 4c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 12c-2.7 0-5.1-1.4-6.5-3.5.03-2.16 4.33-3.35 6.5-3.35s6.47 1.19 6.5 3.35C17.1 16.6 14.7 18 12 18z" fill="#2dd4bf" opacity="0.7"/></svg>
+            </div>
+            <div>
+              <div class="dt-why-title">Why this matters</div>
+              <div class="dt-why-sub">Healthy streams support thriving ecosystems, wildlife and people.</div>
+            </div>
+            <a href="#" class="dt-why-learn">Learn more →</a>
+          </div>
+          <div class="dt-why-grid">
+            <div class="dt-why-item">
+              <div class="dt-why-item-img ecosystem-img"></div>
+              <div class="dt-why-item-label">
+                <svg viewBox="0 0 20 20"><path d="M10 2C5 2 2 6 2 10c0 3.5 2 6.5 5 8l1-3h4l1 3c3-1.5 5-4.5 5-8 0-4-3-8-8-8z" fill="#4ade80" opacity="0.8"/></svg>
+                Ecosystem
+              </div>
+              <div class="dt-why-item-text">Cleaner water allows sunlight to reach aquatic plants, helping the stream stay healthy.</div>
+            </div>
+            <div class="dt-why-item">
+              <div class="dt-why-item-img animals-img"></div>
+              <div class="dt-why-item-label">
+                <svg viewBox="0 0 20 20"><path d="M4 10s1-5 6-5 6 5 6 5-1 5-6 5-6-5-6-5z" fill="#34d399" opacity="0.7"/></svg>
+                Animals
+              </div>
+              <div class="dt-why-item-text">Changes in water quality can affect fish and other wildlife that live here.</div>
+            </div>
+            <div class="dt-why-item">
+              <div class="dt-why-item-img people-img"></div>
+              <div class="dt-why-item-label">
+                <svg viewBox="0 0 20 20"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 0114 0H3z" fill="#60a5fa" opacity="0.8"/></svg>
+                People
+              </div>
+              <div class="dt-why-item-text">Cleaner streams mean safer recreation and healthier communities.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- At a glance -->
+        <div class="dt-glance-card">
+          <div class="dt-glance-header">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#2dd4bf" stroke-width="1.5" fill="none"/><path d="M8 17V13M12 17V9M16 17V11" stroke="#2dd4bf" stroke-width="1.5"/></svg>
+            <div>
+              <div class="dt-glance-title">At a glance</div>
+              <div class="dt-glance-sub">Across all monitored sites</div>
+            </div>
+          </div>
+          <div class="dt-glance-grid">
+            <div class="dt-glance-stat">
+              <div class="dt-glance-stat-icon sites-icon">
+                <svg viewBox="0 0 20 20"><circle cx="10" cy="8" r="3" stroke="#2dd4bf" stroke-width="1.5" fill="none"/><path d="M10 2C6.69 2 4 4.69 4 8c0 4.42 6 10 6 10s6-5.58 6-10c0-3.31-2.69-6-6-6z" stroke="#2dd4bf" stroke-width="1.5" fill="none"/></svg>
+              </div>
+              <div class="dt-glance-num" id="dtTotalSites">6</div>
+              <div class="dt-glance-label">Total sites</div>
+            </div>
+            <div class="dt-glance-stat">
+              <div class="dt-glance-stat-icon recheck-icon">
+                <svg viewBox="0 0 20 20"><path d="M10 3l7 14H3L10 3z" stroke="#fbbf24" stroke-width="1.5" fill="none"/><path d="M10 9v4M10 15v.5" stroke="#fbbf24" stroke-width="1.5"/></svg>
+              </div>
+              <div class="dt-glance-num warn" id="dtRecheckCount">1</div>
+              <div class="dt-glance-label">Needs recheck</div>
+            </div>
+            <div class="dt-glance-stat">
+              <div class="dt-glance-stat-icon normal-icon">
+                <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" stroke="#4ade80" stroke-width="1.5" fill="none"/><path d="M7 10l2 2 4-4" stroke="#4ade80" stroke-width="1.5" fill="none"/></svg>
+              </div>
+              <div class="dt-glance-num ok" id="dtNormalCount">4</div>
+              <div class="dt-glance-label">Normal</div>
+            </div>
+            <div class="dt-glance-stat">
+              <div class="dt-glance-stat-icon nodata-icon">
+                <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" stroke="#6b7280" stroke-width="1.5" fill="none"/><path d="M7 10h6" stroke="#6b7280" stroke-width="1.5"/></svg>
+              </div>
+              <div class="dt-glance-num muted" id="dtNoDataCount">1</div>
+              <div class="dt-glance-label">No recent data</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /dt-bottom-row -->
+
+      <!-- Evidence panel (hidden until WHY? is clicked) -->
+      <div class="dt-evidence-panel hidden" id="dtEvidencePanel">
+        <div class="dt-evidence-header">
+          <span class="dt-evidence-title">🔴 Potential Baseline Break</span>
+          <button class="dt-evidence-close" id="dtEvidenceClose">✕</button>
+        </div>
+        <div class="dt-evidence-body">
+          <div class="dt-evidence-row">
+            <div class="dt-evidence-block">
+              <div class="dt-ev-label">Current reading</div>
+              <div class="dt-ev-value" id="dtEvCurrent">—</div>
+            </div>
+            <div class="dt-evidence-block">
+              <div class="dt-ev-label">Typical recent range</div>
+              <div class="dt-ev-value" id="dtEvRange">—</div>
+            </div>
+            <div class="dt-evidence-block">
+              <div class="dt-ev-label">Anomaly score</div>
+              <div class="dt-ev-value warn" id="dtEvScore">—</div>
+            </div>
+          </div>
+          <div class="dt-evidence-reasons" id="dtEvReasons"></div>
+        </div>
+        <!-- Human review within evidence panel -->
+        <div class="dt-review-section">
+          <div class="dt-review-prompt">Does this match what you observe at the site?</div>
+          <div class="dt-review-btns">
+            <button class="dt-review-btn confirm" data-decision="confirmed" id="dtBtnConfirm">✓ Yes – Reviewed</button>
+            <button class="dt-review-btn reject" data-decision="rejected" id="dtBtnReject">✗ Does not look unusual</button>
+            <button class="dt-review-btn unsure" data-decision="unsure" id="dtBtnUnsure">? I'm not sure</button>
+          </div>
+          <div class="dt-review-feedback hidden" id="dtReviewFeedback"></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+<!-- /desktop-shell -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MOBILE LAYOUT  (< 900 px)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="mobile-shell" id="mobileShell">
+
+  <!-- ── SCREEN 1: Home ── -->
+  <div class="mob-screen active" id="mobHome" style="background-image: url('{{ url_for('static', filename='images/bg-home.png') }}')">
+    <div class="mob-screen-overlay"></div>
+    <div class="mob-content">
+
+      <!-- Status bar -->
+      <div class="mob-statusbar">
+        <span class="mob-time" id="mobTime">9:41</span>
+        <div class="mob-statusbar-icons">
+          <svg viewBox="0 0 24 24" width="16"><path d="M1 6l5 5 4-4 4 4 5-5" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          <svg viewBox="0 0 24 24" width="16"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          <svg viewBox="0 0 24 24" width="16"><rect x="2" y="7" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M22 11v3" stroke="currentColor" stroke-width="2"/><rect x="4" y="9" width="12" height="7" rx="1" fill="currentColor"/></svg>
+        </div>
+      </div>
+
+      <!-- Brand header -->
+      <div class="mob-header">
+        <div class="mob-brand">
+          <svg viewBox="0 0 32 20" width="32" height="20">
+            <path d="M2 10 Q6 4 10 10 Q14 16 18 10 Q22 4 26 10 Q28 13 30 10" stroke="#2dd4bf" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <div class="mob-brand-name">StreamWatch</div>
+            <div class="mob-brand-sub">Cleaner Streams. Brighter Cities.</div>
+          </div>
+        </div>
+        <button class="mob-notif-btn" id="mobNotifBtn">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+          <span class="mob-notif-dot"></span>
+        </button>
+      </div>
+
+      <!-- Current site pill -->
+      <div class="mob-site-pill" id="mobSitePill">
+        <svg viewBox="0 0 20 20" width="16"><circle cx="10" cy="8" r="3" stroke="#f472b6" stroke-width="1.5" fill="none"/><path d="M10 2C6.69 2 4 4.69 4 8c0 4.42 6 10 6 10s6-5.58 6-10c0-3.31-2.69-6-6-6z" stroke="#f472b6" stroke-width="1.5" fill="none"/></svg>
+        <div>
+          <div class="mob-pill-name" id="mobPillName">Site 3 – Urban Stream</div>
+          <div class="mob-pill-loc" id="mobPillLoc">Central District</div>
+        </div>
+        <svg viewBox="0 0 12 12" width="12"><path d="M4 6h6M7 3l3 3-3 3" stroke="#94a3b8" stroke-width="1.5" fill="none"/></svg>
+      </div>
+
+      <!-- Streak hero -->
+      <div class="mob-streak-hero">
+        <div class="mob-streak-flame">
+          <svg viewBox="0 0 60 80" width="60">
+            <defs>
+              <radialGradient id="flameGrad" cx="50%" cy="70%" r="60%">
+                <stop offset="0%" stop-color="#fbbf24"/>
+                <stop offset="60%" stop-color="#f97316"/>
+                <stop offset="100%" stop-color="#dc2626"/>
+              </radialGradient>
+            </defs>
+            <ellipse cx="30" cy="70" rx="18" ry="8" fill="#dc2626" opacity="0.3"/>
+            <path d="M30 5 C20 20 10 30 15 50 C18 60 22 65 30 70 C38 65 42 60 45 50 C50 30 40 20 30 5z" fill="url(#flameGrad)"/>
+            <path d="M30 25 C25 35 22 42 25 52 C27 58 29 62 30 65 C31 62 33 58 35 52 C38 42 35 35 30 25z" fill="#fef3c7" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="mob-streak-text">
+          <div class="mob-streak-num" id="mobStreakNum">7</div>
+          <div class="mob-streak-label">CHECKS<br>IN A ROW</div>
+        </div>
+      </div>
+      <div class="mob-streak-msg">Great work!<br>You're helping keep our streams healthy.</div>
+
+      <!-- Weekly streak dots -->
+      <div class="mob-week-row" id="mobWeekRow">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Stats grid -->
+      <div class="mob-stats-grid">
+        <div class="mob-stat-card" id="mobStatChecks">
+          <svg viewBox="0 0 20 20"><path d="M10 2C5 2 2 6 2 10s3 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 0v10l5 3" stroke="#2dd4bf" stroke-width="1.5" fill="none"/></svg>
+          <div class="mob-stat-num">6</div>
+          <div class="mob-stat-label">Total checks</div>
+          <svg class="mob-stat-arrow" viewBox="0 0 12 12"><path d="M4 6h6M7 3l3 3-3 3" stroke="#94a3b8" stroke-width="1.5" fill="none"/></svg>
+        </div>
+        <div class="mob-stat-card" id="mobStatSites">
+          <svg viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" rx="2" stroke="#60a5fa" stroke-width="1.5" fill="none"/><path d="M7 9l2 2 4-4" stroke="#60a5fa" stroke-width="1.5" fill="none"/></svg>
+          <div class="mob-stat-num">3</div>
+          <div class="mob-stat-label">Sites visited</div>
+          <svg class="mob-stat-arrow" viewBox="0 0 12 12"><path d="M4 6h6M7 3l3 3-3 3" stroke="#94a3b8" stroke-width="1.5" fill="none"/></svg>
+        </div>
+        <div class="mob-stat-card" id="mobStatRank">
+          <svg viewBox="0 0 20 20"><path d="M10 3l2 5h5l-4 3 1.5 5L10 13l-4.5 3L7 11l-4-3h5z" stroke="#a78bfa" stroke-width="1.5" fill="none"/></svg>
+          <div class="mob-stat-num">12</div>
+          <div class="mob-stat-label">Community rank</div>
+          <svg class="mob-stat-arrow" viewBox="0 0 12 12"><path d="M4 6h6M7 3l3 3-3 3" stroke="#94a3b8" stroke-width="1.5" fill="none"/></svg>
+        </div>
+        <div class="mob-stat-card" id="mobStatPoints">
+          <svg viewBox="0 0 20 20"><polygon points="10,2 12.5,7.5 18,8 14,12 15.5,18 10,15 4.5,18 6,12 2,8 7.5,7.5" stroke="#fbbf24" stroke-width="1.5" fill="none"/></svg>
+          <div class="mob-stat-num">+120</div>
+          <div class="mob-stat-label">Impact points</div>
+          <svg class="mob-stat-arrow" viewBox="0 0 12 12"><path d="M4 6h6M7 3l3 3-3 3" stroke="#94a3b8" stroke-width="1.5" fill="none"/></svg>
+        </div>
+      </div>
+
+      <!-- CTA button -->
+      <button class="mob-cta-btn" id="mobStartCheck">
+        <svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2"/></svg>
+        Make a new check
+      </button>
+
+    </div><!-- /mob-content -->
+
+    <!-- Bottom nav -->
+    <nav class="mob-bottom-nav">
+      <a href="#" class="mob-nav-item active" data-screen="home">
+        <svg viewBox="0 0 20 20"><path d="M3 9l7-7 7 7v9H4V9z" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Home
+      </a>
+      <a href="#" class="mob-nav-item" data-screen="map">
+        <svg viewBox="0 0 20 20"><circle cx="10" cy="8" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10 2C6.69 2 4 4.69 4 8c0 4.42 6 10 6 10s6-5.58 6-10c0-3.31-2.69-6-6-6z" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Map
+      </a>
+      <a href="#" class="mob-nav-item check-btn" data-screen="check">
+        <div class="mob-nav-check-circle">
+          <svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2"/></svg>
+        </div>
+        Check
+      </a>
+      <a href="#" class="mob-nav-item" data-screen="learn">
+        <svg viewBox="0 0 20 20"><path d="M3 5h14M3 10h10M3 15h6" stroke="currentColor" stroke-width="1.5"/></svg>
+        Learn
+      </a>
+      <a href="#" class="mob-nav-item" data-screen="profile">
+        <svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M3 17a7 7 0 0114 0" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        Profile
+      </a>
+    </nav>
+  </div>
+  <!-- /mobHome -->
+
+
+  <!-- ── SCREEN 2: Check wizard ── -->
+  <div class="mob-screen" id="mobCheckScreen" style="background-image: url('{{ url_for('static', filename='images/bg-check.png') }}')">
+    <div class="mob-screen-overlay dark-overlay"></div>
+    <div class="mob-content mob-check-content">
+
+      <!-- Progress bar -->
+      <div class="mob-progress-bar">
+        <button class="mob-back-btn" id="mobCheckBack">
+          <svg viewBox="0 0 20 20"><path d="M13 16l-6-6 6-6" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <div class="mob-progress-track">
+          <div class="mob-progress-fill" id="mobProgressFill" style="width: 33%"></div>
+        </div>
+        <div class="mob-step-label" id="mobStepLabel">2 / 6</div>
+      </div>
+
+      <!-- Question -->
+      <div class="mob-question-wrap">
+        <h1 class="mob-question" id="mobQuestion">HOW <span class="mob-q-highlight">CLEAR</span> IS<br>THE WATER?</h1>
+        <p class="mob-question-sub" id="mobQuestionSub">Choose the option that looks most like what you see at the stream right now.</p>
+      </div>
+
+      <!-- Answer tiles -->
+      <div class="mob-tiles-grid" id="mobTilesGrid">
+        <div class="mob-tile" data-value="clear">
+          <div class="mob-tile-img" style="background-image: url('{{ url_for('static', filename='images/water-clear.png') }}')"></div>
+          <div class="mob-tile-label">Clear</div>
+          <div class="mob-tile-sub">You can see the bottom clearly</div>
+        </div>
+        <div class="mob-tile" data-value="slightly_cloudy">
+          <div class="mob-tile-img" style="background-image: url('{{ url_for('static', filename='images/water-slightly-cloudy.png') }}')"></div>
+          <div class="mob-tile-label">Slightly cloudy</div>
+          <div class="mob-tile-sub">A little less clear, but still visible</div>
+        </div>
+        <div class="mob-tile" data-value="cloudy">
+          <div class="mob-tile-img" style="background-image: url('{{ url_for('static', filename='images/water-cloudy.png') }}')"></div>
+          <div class="mob-tile-label">Cloudy</div>
+          <div class="mob-tile-sub">Hard to see the bottom</div>
+        </div>
+        <div class="mob-tile" data-value="very_cloudy">
+          <div class="mob-tile-img" style="background-image: url('{{ url_for('static', filename='images/water-very-cloudy.png') }}')"></div>
+          <div class="mob-tile-label">Very cloudy</div>
+          <div class="mob-tile-sub">Looks muddy or opaque</div>
+        </div>
+      </div>
+
+      <!-- Examples link -->
+      <div class="mob-examples-link">
+        <svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="7" stroke="#2dd4bf" stroke-width="1.5" fill="none"/><path d="M10 9v5M10 7v.5" stroke="#2dd4bf" stroke-width="1.5"/></svg>
+        <div>
+          <div class="mob-examples-main">Not sure? Show me examples</div>
+          <div class="mob-examples-sub">See photos and learn how to tell the difference.</div>
+        </div>
+        <svg viewBox="0 0 12 12" width="12"><path d="M4 6h6M7 3l3 3-3 3" stroke="#94a3b8" stroke-width="1.5" fill="none"/></svg>
+      </div>
+
+      <!-- Continue button -->
+      <button class="mob-continue-btn" id="mobContinueBtn" disabled>
+        Continue →
+      </button>
+
+    </div>
+  </div>
+  <!-- /mobCheckScreen -->
+
+
+  <!-- ── SCREEN 3: Result ── -->
+  <div class="mob-screen" id="mobResultScreen" style="background-image: url('{{ url_for('static', filename='images/bg-result.png') }}')">
+    <div class="mob-screen-overlay result-overlay"></div>
+    <div class="mob-content mob-result-content">
+
+      <!-- Status bar -->
+      <div class="mob-statusbar">
+        <span class="mob-time">9:41</span>
+        <div class="mob-statusbar-icons">
+          <svg viewBox="0 0 24 24" width="16"><path d="M1 6l5 5 4-4 4 4 5-5" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          <svg viewBox="0 0 24 24" width="16"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          <svg viewBox="0 0 24 24" width="16"><rect x="2" y="7" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M22 11v3" stroke="currentColor" stroke-width="2"/><rect x="4" y="9" width="12" height="7" rx="1" fill="currentColor"/></svg>
+        </div>
+      </div>
+
+      <div class="mob-result-brand">
+        <svg viewBox="0 0 20 20" width="20"><path d="M5 10l3 3 7-7" stroke="#4ade80" stroke-width="2" fill="none"/></svg>
+        <span>StreamWatch</span>
+        <button class="mob-share-btn">
+          <svg viewBox="0 0 20 20"><path d="M15 8a3 3 0 100-6 3 3 0 000 6zm-10 4a3 3 0 100-6 3 3 0 000 6zm10 4a3 3 0 100-6 3 3 0 000 6zM5 10l5-3m0 0l5 3M10 7v8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+      </div>
+
+      <!-- Match check circle -->
+      <div class="mob-result-hero">
+        <div class="mob-result-circle">
+          <svg viewBox="0 0 100 100" width="120">
+            <defs>
+              <radialGradient id="circleGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#4ade80" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="50" r="45" fill="url(#circleGlow)"/>
+            <circle cx="50" cy="50" r="38" stroke="#4ade80" stroke-width="3" fill="none" opacity="0.5"/>
+            <circle cx="50" cy="50" r="30" stroke="#4ade80" stroke-width="2" fill="none"/>
+            <path d="M32 50l12 12 24-24" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="mob-result-headline">
+        YOUR REPORT <span class="mob-result-accent">MATCHES</span><br>
+        this stream's normal pattern
+      </div>
+
+      <!-- Site summary card -->
+      <div class="mob-result-card">
+        <div class="mob-result-card-header">
+          <svg viewBox="0 0 24 24" width="20"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0" stroke="#2dd4bf" stroke-width="1.5" fill="none"/></svg>
+          <div>
+            <div class="mob-result-site-name" id="mobResultSiteName">Site 3 – Urban Stream</div>
+            <div class="mob-result-site-date" id="mobResultSiteDate">Oct 25, 2026 · 10:30 AM</div>
+          </div>
+          <svg viewBox="0 0 12 12" width="12"><path d="M4 6h6M7 3l3 3-3 3" stroke="#94a3b8" stroke-width="1.5" fill="none"/></svg>
+        </div>
+      </div>
+
+      <!-- Observation result -->
+      <div class="mob-result-obs">
+        <svg viewBox="0 0 24 24" width="20"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#fbbf24" stroke-width="1.5" fill="none"/><path d="M8 17V13M12 17V9M16 17V11" stroke="#fbbf24" stroke-width="1.5"/></svg>
+        <div class="mob-result-obs-text" id="mobResultObsText">
+          Your observation is within the usual range for this site. Thanks for checking!
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <button class="mob-cta-btn" id="mobSubmitAnother">
+        <svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2"/></svg>
+        Submit another check
+      </button>
+      <button class="mob-secondary-btn" id="mobViewData">
+        <svg viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M7 9l2 2 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        View stream data
+      </button>
+
+    </div>
+  </div>
+  <!-- /mobResultScreen -->
+
+
+  <!-- ── SCREEN: Mobile map ── -->
+  <div class="mob-screen" id="mobMapScreen">
+    <div class="mob-content mob-map-content">
+      <div class="mob-map-header">
+        <button class="mob-back-btn" id="mobMapBack">
+          <svg viewBox="0 0 20 20"><path d="M13 16l-6-6 6-6" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <span class="mob-map-title">Stream Network</span>
+      </div>
+      <div id="mobMap" class="mob-map-container"></div>
+    </div>
+  </div>
+  <!-- /mobMapScreen -->
+
+</div>
+<!-- /mobile-shell -->
+
+
+<!-- ══════════════════════════════════════════
+     Scripts
+══════════════════════════════════════════ -->
+<script src="{{ url_for('static', filename='js/chart-module.js') }}"></script>
+<script src="{{ url_for('static', filename='js/map-module.js') }}"></script>
+<script src="{{ url_for('static', filename='js/review.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
