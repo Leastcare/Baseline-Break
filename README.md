@@ -131,7 +131,7 @@ Every alert requires human review. The system shows evidence, not verdicts.
 **Requirements:** Python 3.11+
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/baseline-break.git
+git clone https://github.com/Leastcare/Baseline-Break.git
 cd baseline-break
 pip install -r requirements.txt
 cp .env.example .env
@@ -141,6 +141,30 @@ python app.py
 Open `http://localhost:5000`
 
 The app fetches live USGS data on first load. Expect ~5–10 seconds for the first analysis to complete. Subsequent requests are cached for 5 minutes.
+
+---
+
+## Deploy to Render (free)
+
+1. Go to [render.com](https://render.com) and sign in with GitHub
+2. Click **New Web Service** → connect this repository
+3. Render auto-detects Python
+4. Add environment variables from `.env.example`
+5. Click **Deploy**
+
+Your app will be live at `https://baseline-break.onrender.com` (or similar).
+
+**Free tier note:** The app sleeps after 15 minutes of inactivity. First request after sleep takes ~30 seconds to wake up.
+
+## Deploy to Railway (alternative)
+
+1. Go to [railway.app](https://railway.app)
+2. New Project → Deploy from GitHub repo
+3. Select `Baseline-Break`
+4. Add environment variables
+5. Deploy
+
+Railway gives $5/month free credit — enough for a demo.
 
 ---
 

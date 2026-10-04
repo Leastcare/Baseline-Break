@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: baseline-break
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "app:create_app()" --workers 2 --timeout 120
+    envVars:
+      - key: FLASK_DEBUG
+        value: false
+      - key: CACHE_TTL_SECONDS
+        value: 300
+      - key: BASELINE_DAYS
+        value: 90
+      - key: ANOMALY_THRESHOLD
+        value: 3.5
+      - key: PERSISTENCE_POINTS
+        value: 3
+      - key: SECRET_KEY
+        generateValue: true
+      - key: USGS_API_KEY
+        value: ""
