@@ -76,3 +76,6 @@ if __name__ == "__main__":
         port  = 5000,
         debug = application.config.get("FLASK_DEBUG", False),
     )
+
+# Module-level app instance for Gunicorn (used by Render/Railway)
+app = create_app()
