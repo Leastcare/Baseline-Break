@@ -277,9 +277,6 @@ canvas { display: block; }
   min-height: 0;
   height: calc(100% - 106px);
   position: relative;
-  background-image: url('/static/images/bg-map.png');
-  background-size: cover;
-  background-position: center;
 }
 
 .dt-map-legend {
@@ -521,8 +518,16 @@ canvas { display: block; }
   width: 100%;
   aspect-ratio: 4/3;
   border-radius: 10px;
-  background: var(--dt-surface-3);
   overflow: hidden;
+  background: var(--dt-surface-3);
+  display: flex;
+  align-items: stretch;
+}
+.dt-why-item-img svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 10px;
 }
 .ecosystem-img { background: linear-gradient(135deg, #0a3d1f, #1a6b3c); }
 .animals-img   { background: linear-gradient(135deg, #0a2d3d, #1a5a6b); }
@@ -1382,9 +1387,9 @@ canvas { display: block; }
    19. LEAFLET OVERRIDES
    ───────────────────────────────────────────────────────────────────────── */
 
-/* Darken OSM tiles to match the dark teal theme */
+/* Stadia dark tiles are already dark — no filter needed */
 .leaflet-tile-pane {
-  filter: brightness(0.18) saturate(0.5) invert(1) hue-rotate(175deg) contrast(0.85);
+  filter: none;
 }
 
 .leaflet-container {
@@ -1435,10 +1440,8 @@ canvas { display: block; }
 }
 .leaflet-control-attribution a { color: var(--dt-teal) !important; }
 
-/* Mobile Leaflet — darker treatment for the purple theme */
-#mobMap .leaflet-tile-pane {
-  filter: brightness(0.2) saturate(0.5) hue-rotate(160deg) invert(1) hue-rotate(180deg);
-}
+/* Mobile Leaflet — also no filter needed with Stadia dark */
+#mobMap .leaflet-tile-pane { filter: none; }
 #mobMap .leaflet-container { background: var(--mob-bg) !important; }
 
 
@@ -1452,3 +1455,127 @@ canvas { display: block; }
   border-radius: 4px;
 }
 .dt-data-col::-webkit-scrollbar-thumb:hover { background: var(--dt-teal); }
+
+
+/* ─────────────────────────────────────────────────────────────────────────
+   21. DESKTOP — PANEL VIEWS (nav switching)
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* All panels hidden by default, only .active shown */
+.dt-panel-view { display: none; flex-direction: column; gap: 14px; }
+.dt-panel-view.active { display: flex; }
+
+.dt-panel-page-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--dt-text);
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--dt-border);
+  flex-shrink: 0;
+}
+
+/* ── Sites panel ── */
+.dt-sites-list { display: flex; flex-direction: column; gap: 10px; }
+.dt-site-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.dt-site-row:hover { border-color: var(--dt-teal); background: var(--dt-surface-2); }
+.dt-site-row-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dt-site-row-dot.normal  { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+.dt-site-row-dot.potential_break,
+.dt-site-row-dot.needs_recheck { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; }
+.dt-site-row-dot.no_data,
+.dt-site-row-dot.unknown { background: #6b7280; }
+.dt-site-row-info { flex: 1; min-width: 0; }
+.dt-site-row-name { font-size: 0.875rem; font-weight: 600; color: var(--dt-text); }
+.dt-site-row-loc  { font-size: 0.72rem; color: var(--dt-text-muted); margin-top: 2px; }
+.dt-site-row-val  { font-size: 0.85rem; font-weight: 700; color: var(--dt-text); flex-shrink: 0; }
+.dt-site-row-arrow { color: var(--dt-text-muted); font-size: 1rem; flex-shrink: 0; }
+
+/* ── Trends panel ── */
+.dt-trends-grid { display: flex; flex-direction: column; gap: 12px; }
+.dt-trends-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.dt-trends-stat-card {
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.dt-trends-stat-label { font-size: 0.68rem; color: var(--dt-text-muted); margin-bottom: 4px; }
+.dt-trends-stat-val   { font-size: 1rem; font-weight: 700; color: var(--dt-teal); }
+
+/* ── Community panel ── */
+.dt-community-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.dt-community-card {
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dt-community-card-icon { width: 40px; height: 40px; }
+.dt-community-card-icon svg { width: 40px; height: 40px; }
+.dt-community-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--dt-text);
+}
+.dt-community-card-text {
+  font-size: 0.75rem;
+  color: var(--dt-text-muted);
+  line-height: 1.5;
+}
+.dt-community-disclaimer {
+  font-size: 0.7rem;
+  color: var(--dt-text-dim);
+  padding: 10px 14px;
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius-sm);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── Reports panel ── */
+.dt-reports-list { display: flex; flex-direction: column; gap: 10px; }
+.dt-report-row {
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius);
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.dt-report-status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.dt-report-info { flex: 1; min-width: 0; }
+.dt-report-site { font-size: 0.85rem; font-weight: 600; color: var(--dt-text); }
+.dt-report-detail { font-size: 0.72rem; color: var(--dt-text-muted); margin-top: 3px; line-height: 1.4; }
+.dt-report-time { font-size: 0.68rem; color: var(--dt-text-dim); margin-top: 4px; }

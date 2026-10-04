@@ -12,12 +12,12 @@ const MapModule = (() => {
 
   /* ─── Tile layers (all free / no API key required) ───────────────── */
   const TILES = {
-    // OpenStreetMap standard — always free, no key
+    // Stadia Alidade Smooth Dark — genuinely dark, free, no key needed
     map: {
-      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      subdomains: "abc",
-      maxZoom: 19,
+      url: "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+      attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a> © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+      subdomains: "",
+      maxZoom: 20,
     },
     // Esri World Imagery — free satellite, no key
     satellite: {
@@ -25,12 +25,12 @@ const MapModule = (() => {
       attribution: "© Esri, Maxar, Earthstar Geographics",
       maxZoom: 19,
     },
-    // OpenTopoMap — free terrain, no key
+    // Stadia Stamen Terrain — styled terrain, free
     terrain: {
-      url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-      attribution: '© <a href="https://opentopomap.org">OpenTopoMap</a>',
-      subdomains: "abc",
-      maxZoom: 17,
+      url: "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
+      attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a>',
+      subdomains: "",
+      maxZoom: 18,
     },
   };
 
@@ -175,7 +175,6 @@ const MapModule = (() => {
     // Default tile layer
     const tileLayer = L.tileLayer(TILES.map.url, {
       attribution: TILES.map.attribution,
-      subdomains: TILES.map.subdomains,
       maxZoom: TILES.map.maxZoom,
     }).addTo(_dtMap);
 
@@ -234,12 +233,9 @@ const MapModule = (() => {
     if (!_dtMap) return;
     const cfg = TILES[type] ?? TILES.map;
     if (_dtMap._currentTile) _dtMap.removeLayer(_dtMap._currentTile);
-    _dtMap._currentTile = L.tileLayer(cfg.url, {
-      attribution: cfg.attribution,
-      subdomains: cfg.subdomains ?? "abc",
-      maxZoom: cfg.maxZoom ?? 18,
-    }).addTo(_dtMap);
-    // Push below markers
+    const opts = { attribution: cfg.attribution, maxZoom: cfg.maxZoom ?? 18 };
+    if (cfg.subdomains) opts.subdomains = cfg.subdomains;
+    _dtMap._currentTile = L.tileLayer(cfg.url, opts).addTo(_dtMap);
     _dtMap._currentTile.bringToBack();
   }
 

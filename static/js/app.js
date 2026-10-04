@@ -350,16 +350,147 @@ function buildMapSites(sites) {
 }
 
 /* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — NAV LINKS
+   DESKTOP — NAV LINKS  (panel switching)
    ─────────────────────────────────────────────────────────────────────── */
+const DT_PANELS = {
+  overview:  "panelOverview",
+  sites:     "panelSites",
+  trends:    "panelTrends",
+  community: "panelCommunity",
+  reports:   "panelReports",
+};
+
+function switchDesktopPanel(page) {
+  // Hide all panels
+  Object.values(DT_PANELS).forEach(id => {
+    el(id)?.classList.remove("active");
+  });
+  // Show target panel
+  const targetId = DT_PANELS[page] ?? "panelOverview";
+  el(targetId)?.classList.add("active");
+
+  // Scroll data column to top
+  const dataCol = document.querySelector(".dt-data-col");
+  if (dataCol) dataCol.scrollTop = 0;
+
+  // Populate panel if needed
+  if (page === "sites")     renderSitesPanel();
+  if (page === "trends")    renderTrendsPanel();
+  if (page === "community") renderCommunityPanel();
+  if (page === "reports")   renderReportsPanel();
+}
+
 function wireDesktopNav() {
   document.querySelectorAll(".dt-nav-link").forEach(link => {
     link.addEventListener("click", e => {
       e.preventDefault();
       document.querySelectorAll(".dt-nav-link").forEach(l => l.classList.remove("active"));
       link.classList.add("active");
+      const page = link.dataset.page ?? "overview";
+      switchDesktopPanel(page);
     });
   });
+}
+
+/* ── Sites panel ─────────────────────────────────────────────────────── */
+function renderSitesPanel() {
+  const container = el("dtSitesList");
+  if (!container || !App.sites.length) return;
+  container.innerHTML = App.sites.map(site => {
+    const cached  = App.analysisCache[site.id];
+    const status  = cached?.status ?? site.status ?? "unknown";
+    const valStr  = cached?.current_value != null
+      ? `${cached.current_value.toFixed(1)} ${fmtUnit(cached.unit || "")}`
+      : "—";
+    const dotCls  = toMapStatus(status);
+    return `
+      <div class="dt-site-row" onclick="selectSite('${site.id}'); switchDesktopPanel('overview'); document.querySelectorAll('.dt-nav-link').forEach(l => l.classList.toggle('active', l.dataset.page==='overview'))">
+        <span class="dt-site-row-dot ${status}"></span>
+        <div class="dt-site-row-info">
+          <div class="dt-site-row-name">${escHtml(site.name)}</div>
+          <div class="dt-site-row-loc">${escHtml(site.location ?? site.state ?? "")}</div>
+        </div>
+        <div class="dt-site-row-val">${valStr}</div>
+        <span class="dt-site-row-arrow">›</span>
+      </div>`;
+  }).join("");
+}
+
+/* ── Trends panel ────────────────────────────────────────────────────── */
+function renderTrendsPanel() {
+  if (!App.selectedSiteId) return;
+  const analysis = App.analysisCache[App.selectedSiteId];
+  if (!analysis) return;
+
+  const unit = fmtUnit(analysis.unit || "");
+  setText("dtTrendsTitle", `${analysis.parameter_name || "Streamflow"} Trend`);
+  setText("dtTrendsSub",   `Last ${analysis.trend?.length ?? 0} days · ${analysis.site_name || ""}`);
+  setText("dtTrendsCurrent", analysis.current_value != null ? `${analysis.current_value.toFixed(1)} ${unit}` : "—");
+  setText("dtTrendsMedian",  analysis.baseline_median != null ? `${analysis.baseline_median.toFixed(1)} ${unit}` : "—");
+  setText("dtTrendsRange",
+    analysis.baseline_lower != null && analysis.baseline_upper != null
+      ? `${analysis.baseline_lower.toFixed(1)} – ${analysis.baseline_upper.toFixed(1)} ${unit}`
+      : "—"
+  );
+  setText("dtTrendsScore", analysis.anomaly_score != null ? analysis.anomaly_score.toFixed(2) : "—");
+
+  if (analysis.trend?.length) {
+    // Destroy previous chart on this canvas if any
+    const canvas = el("dtTrendsChart");
+    if (canvas) ChartModule.init("dtTrendsChart", analysis.trend, unit);
+  }
+}
+
+/* ── Community panel ─────────────────────────────────────────────────── */
+function renderCommunityPanel() {
+  if (!App.selectedSiteId) return;
+  const analysis = App.analysisCache[App.selectedSiteId];
+  if (!analysis?.one_health) return;
+
+  const oh = analysis.one_health;
+  if (oh.ecosystem)   setText("dtCommunityEco",     oh.ecosystem);
+  if (oh.animals)     setText("dtCommunityAnimals",  oh.animals);
+  if (oh.people)      setText("dtCommunityPeople",   oh.people);
+  if (oh.disclaimer)  setText("dtCommunityDisclaimer", oh.disclaimer);
+}
+
+/* ── Reports panel ───────────────────────────────────────────────────── */
+function renderReportsPanel() {
+  const container = el("dtReportsList");
+  if (!container) return;
+
+  const entries = Object.entries(App.analysisCache);
+  if (!entries.length) {
+    container.innerHTML = `<div style="color:var(--dt-text-muted);font-size:0.82rem;padding:16px">No analysis data loaded yet. Select a site first.</div>`;
+    return;
+  }
+
+  container.innerHTML = entries.map(([siteId, analysis]) => {
+    const status   = analysis.status ?? "unknown";
+    const dotColor = {
+      normal:          "#4ade80",
+      potential_break: "#fbbf24",
+      no_data:         "#6b7280",
+    }[status] ?? "#6b7280";
+
+    const { date, time } = fmtTimestamp(analysis.timestamp);
+    const unit    = fmtUnit(analysis.unit || "");
+    const valStr  = analysis.current_value != null
+      ? `${analysis.current_value.toFixed(1)} ${unit}`
+      : "No data";
+    const expStr  = analysis.explanation?.[0] ?? statusLabel(status);
+
+    return `
+      <div class="dt-report-row">
+        <div class="dt-report-status-dot" style="background:${dotColor};box-shadow:0 0 6px ${dotColor}"></div>
+        <div class="dt-report-info">
+          <div class="dt-report-site">${escHtml(analysis.site_name || siteId)}</div>
+          <div class="dt-report-detail">${escHtml(expStr)}</div>
+          <div class="dt-report-time">${date} ${time} · ${analysis.approval_status ?? ""}</div>
+        </div>
+        <div class="dt-site-row-val">${valStr}</div>
+      </div>`;
+  }).join("");
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -441,6 +572,12 @@ async function selectSite(siteId) {
 
   // Update glance stats with live statuses
   renderGlanceStats(App.sites);
+
+  // If Trends/Community/Reports panels are open, refresh them too
+  const activePanel = document.querySelector(".dt-panel-view.active");
+  if (activePanel?.id === "panelTrends")    renderTrendsPanel();
+  if (activePanel?.id === "panelCommunity") renderCommunityPanel();
+  if (activePanel?.id === "panelReports")   renderReportsPanel();
 
   // ── Mobile result screen ──────────────────────────────────────────
   const unit = fmtUnit(analysis.unit || site.unit || "");
