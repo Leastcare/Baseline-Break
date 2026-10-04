@@ -129,13 +129,7 @@
       <div class="dt-site-card" id="dtSiteCard">
         <div class="dt-site-img-wrap" id="dtSiteImgWrap">
           <svg viewBox="0 0 80 60" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
-            <defs>
-              <linearGradient id="siteCardBg" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#0a2535"/>
-                <stop offset="100%" stop-color="#0d3d2a"/>
-              </linearGradient>
-            </defs>
-            <rect width="80" height="60" fill="url(#siteCardBg)"/>
+            <rect width="80" height="60" fill="#0a2535"/>
             <ellipse cx="40" cy="52" rx="50" ry="18" fill="#0e6655" opacity="0.85"/>
             <path d="M0 42 Q20 38 40 42 Q60 46 80 42 L80 60 L0 60Z" fill="#065f46" opacity="0.9"/>
             <path d="M5 40 Q12 32 15 38" fill="#166534" stroke="#15803d" stroke-width="0.5"/>
@@ -232,40 +226,31 @@
             <div class="dt-why-item">
               <div class="dt-why-item-img ecosystem-img">
                 <svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#0a2535"/>
-                      <stop offset="100%" stop-color="#0d3d2a"/>
-                    </linearGradient>
-                    <linearGradient id="waterG" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#0e6655"/>
-                      <stop offset="100%" stop-color="#064e3b"/>
-                    </linearGradient>
-                  </defs>
-                  <rect width="160" height="110" fill="url(#skyG)"/>
-                  <!-- Water -->
-                  <ellipse cx="80" cy="90" rx="90" ry="28" fill="url(#waterG)" opacity="0.9"/>
+                  <!-- Sky -->
+                  <rect width="160" height="110" fill="#071e14"/>
+                  <!-- Water body -->
+                  <ellipse cx="80" cy="95" rx="95" ry="30" fill="#0e5e45"/>
+                  <ellipse cx="80" cy="90" rx="90" ry="22" fill="#0d6b50" opacity="0.9"/>
                   <!-- Ripples -->
-                  <ellipse cx="70" cy="88" rx="18" ry="4" fill="none" stroke="#2dd4bf" stroke-width="0.8" opacity="0.5"/>
-                  <ellipse cx="100" cy="92" rx="12" ry="3" fill="none" stroke="#2dd4bf" stroke-width="0.8" opacity="0.4"/>
+                  <ellipse cx="70" cy="88" rx="18" ry="3" fill="none" stroke="#2dd4bf" stroke-width="0.8" opacity="0.5"/>
+                  <ellipse cx="105" cy="92" rx="12" ry="2.5" fill="none" stroke="#2dd4bf" stroke-width="0.7" opacity="0.4"/>
                   <!-- Plants left -->
-                  <path d="M20 75 Q18 55 25 45 Q30 55 28 75" fill="#16a34a" opacity="0.9"/>
-                  <path d="M28 75 Q32 50 40 42 Q42 55 38 75" fill="#15803d" opacity="0.8"/>
-                  <path d="M15 75 Q10 60 14 50 Q20 60 18 75" fill="#22c55e" opacity="0.7"/>
+                  <path d="M20 80 Q18 58 25 46 Q30 58 28 80" fill="#16a34a"/>
+                  <path d="M28 80 Q33 52 40 43 Q43 56 38 80" fill="#15803d" opacity="0.85"/>
+                  <path d="M14 80 Q9 62 13 51 Q20 62 17 80" fill="#22c55e" opacity="0.7"/>
                   <!-- Plants right -->
-                  <path d="M130 75 Q128 58 135 48 Q140 58 138 75" fill="#16a34a" opacity="0.9"/>
-                  <path d="M140 75 Q144 55 150 48 Q152 62 148 75" fill="#15803d" opacity="0.8"/>
+                  <path d="M130 80 Q128 60 136 49 Q141 60 138 80" fill="#16a34a"/>
+                  <path d="M140 80 Q145 56 151 49 Q153 63 149 80" fill="#15803d" opacity="0.85"/>
                   <!-- Lily pads -->
-                  <ellipse cx="60" cy="85" rx="9" ry="4" fill="#16a34a" opacity="0.8"/>
-                  <ellipse cx="95" cy="90" rx="7" ry="3" fill="#15803d" opacity="0.7"/>
-                  <ellipse cx="115" cy="84" rx="8" ry="3.5" fill="#16a34a" opacity="0.6"/>
-                  <!-- Sun reflection -->
-                  <ellipse cx="80" cy="72" rx="6" ry="2" fill="#fbbf24" opacity="0.3"/>
-                  <!-- Stars/sparkles -->
-                  <circle cx="45" cy="20" r="1" fill="#e2f4f1" opacity="0.6"/>
-                  <circle cx="90" cy="15" r="1.2" fill="#e2f4f1" opacity="0.5"/>
-                  <circle cx="130" cy="25" r="0.8" fill="#e2f4f1" opacity="0.4"/>
-                  <circle cx="110" cy="10" r="1" fill="#2dd4bf" opacity="0.5"/>
+                  <ellipse cx="58" cy="87" rx="9" ry="3.5" fill="#16a34a" opacity="0.8"/>
+                  <ellipse cx="93" cy="91" rx="7" ry="2.8" fill="#15803d" opacity="0.7"/>
+                  <ellipse cx="115" cy="86" rx="8" ry="3" fill="#166534" opacity="0.65"/>
+                  <!-- Sparkles -->
+                  <circle cx="45" cy="22" r="1.2" fill="#a7f3d0" opacity="0.6"/>
+                  <circle cx="90" cy="15" r="1" fill="#e2f4f1" opacity="0.5"/>
+                  <circle cx="130" cy="28" r="0.9" fill="#2dd4bf" opacity="0.5"/>
+                  <circle cx="110" cy="10" r="1.1" fill="#e2f4f1" opacity="0.4"/>
+                  <circle cx="60" cy="35" r="0.8" fill="#a7f3d0" opacity="0.4"/>
                 </svg>
               </div>
               <div class="dt-why-item-label">
@@ -277,41 +262,37 @@
             <div class="dt-why-item">
               <div class="dt-why-item-img animals-img">
                 <svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="riverG" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#0c4a6e"/>
-                      <stop offset="100%" stop-color="#0a3d5c"/>
-                    </linearGradient>
-                  </defs>
-                  <rect width="160" height="110" fill="#071e2b"/>
-                  <!-- River bed -->
-                  <ellipse cx="80" cy="95" rx="95" ry="30" fill="url(#riverG)" opacity="0.95"/>
-                  <!-- Water shimmer lines -->
-                  <path d="M10 82 Q40 78 70 82 Q100 86 130 82 Q145 80 155 82" fill="none" stroke="#38bdf8" stroke-width="1" opacity="0.3"/>
-                  <path d="M5 88 Q35 84 65 88 Q95 92 125 88 Q142 86 158 88" fill="none" stroke="#38bdf8" stroke-width="0.8" opacity="0.2"/>
-                  <!-- Large fish -->
-                  <ellipse cx="65" cy="75" rx="20" ry="8" fill="#2dd4bf" opacity="0.85"/>
-                  <path d="M45 75 L35 68 L35 82 Z" fill="#2dd4bf" opacity="0.85"/>
-                  <circle cx="72" cy="73" r="2" fill="#0a2535"/>
-                  <circle cx="73" cy="72.5" r="0.7" fill="#e2f4f1"/>
-                  <!-- Fin -->
-                  <path d="M60 67 Q65 62 70 67" fill="#14b8a6" opacity="0.7"/>
+                  <!-- Deep water background -->
+                  <rect width="160" height="110" fill="#071828"/>
+                  <rect y="60" width="160" height="50" fill="#0c3a5a"/>
+                  <!-- Water shimmer -->
+                  <path d="M10 68 Q40 64 70 68 Q100 72 130 68 Q148 66 158 68" fill="none" stroke="#38bdf8" stroke-width="1" opacity="0.3"/>
+                  <path d="M5 76 Q35 72 65 76 Q95 80 128 76 Q145 74 158 76" fill="none" stroke="#38bdf8" stroke-width="0.8" opacity="0.2"/>
+                  <!-- Large fish body -->
+                  <ellipse cx="65" cy="80" rx="22" ry="9" fill="#2dd4bf" opacity="0.9"/>
+                  <path d="M43 80 L32 72 L32 88 Z" fill="#2dd4bf" opacity="0.9"/>
+                  <circle cx="73" cy="77" r="2.5" fill="#071828"/>
+                  <circle cx="74" cy="76.5" r="1" fill="#e2f4f1"/>
+                  <path d="M58 71 Q65 65 72 71" fill="#14b8a6" opacity="0.8"/>
                   <!-- Small fish 2 -->
-                  <ellipse cx="105" cy="85" rx="12" ry="5" fill="#34d399" opacity="0.7"/>
-                  <path d="M93 85 L86 80 L86 90 Z" fill="#34d399" opacity="0.7"/>
-                  <circle cx="110" cy="83.5" r="1.5" fill="#0a2535"/>
-                  <!-- Small fish 3 -->
-                  <ellipse cx="120" cy="70" rx="8" ry="3.5" fill="#6ee7b7" opacity="0.5"/>
-                  <path d="M112 70 L107 67 L107 73 Z" fill="#6ee7b7" opacity="0.5"/>
+                  <ellipse cx="108" cy="90" rx="13" ry="5.5" fill="#34d399" opacity="0.75"/>
+                  <path d="M95 90 L87 85 L87 95 Z" fill="#34d399" opacity="0.75"/>
+                  <circle cx="114" cy="88" r="1.8" fill="#071828"/>
+                  <!-- Tiny fish 3 -->
+                  <ellipse cx="125" cy="72" rx="9" ry="4" fill="#6ee7b7" opacity="0.55"/>
+                  <path d="M116 72 L110 69 L110 75 Z" fill="#6ee7b7" opacity="0.55"/>
                   <!-- Bubbles -->
-                  <circle cx="68" cy="65" r="2" fill="none" stroke="#7dd3fc" stroke-width="0.8" opacity="0.5"/>
-                  <circle cx="72" cy="59" r="1.5" fill="none" stroke="#7dd3fc" stroke-width="0.8" opacity="0.4"/>
-                  <circle cx="108" cy="77" r="1.5" fill="none" stroke="#7dd3fc" stroke-width="0.8" opacity="0.4"/>
+                  <circle cx="68" cy="68" r="2.2" fill="none" stroke="#7dd3fc" stroke-width="0.9" opacity="0.5"/>
+                  <circle cx="72" cy="62" r="1.6" fill="none" stroke="#7dd3fc" stroke-width="0.8" opacity="0.4"/>
+                  <circle cx="112" cy="82" r="1.5" fill="none" stroke="#7dd3fc" stroke-width="0.8" opacity="0.35"/>
                   <!-- Reeds -->
-                  <line x1="30" y1="110" x2="32" y2="60" stroke="#166534" stroke-width="1.5"/>
-                  <ellipse cx="32" cy="58" rx="4" ry="7" fill="#15803d" opacity="0.8"/>
-                  <line x1="140" y1="110" x2="138" y2="65" stroke="#166534" stroke-width="1.5"/>
-                  <ellipse cx="138" cy="63" rx="3.5" ry="6" fill="#15803d" opacity="0.7"/>
+                  <rect x="29" y="60" width="2" height="50" fill="#166534"/>
+                  <ellipse cx="30" cy="58" rx="4.5" ry="8" fill="#15803d" opacity="0.85"/>
+                  <rect x="138" y="60" width="2" height="50" fill="#166534"/>
+                  <ellipse cx="139" cy="57" rx="4" ry="7" fill="#15803d" opacity="0.75"/>
+                  <!-- Top glow -->
+                  <rect width="160" height="60" fill="#071828" opacity="0.4"/>
+                  <circle cx="80" cy="35" r="18" fill="#0c4a6e" opacity="0.3"/>
                 </svg>
               </div>
               <div class="dt-why-item-label">
@@ -323,17 +304,7 @@
             <div class="dt-why-item">
               <div class="dt-why-item-img people-img">
                 <svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="skyP" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#0f172a"/>
-                      <stop offset="100%" stop-color="#1e3a5f"/>
-                    </linearGradient>
-                    <linearGradient id="waterP" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stop-color="#1e40af"/>
-                      <stop offset="100%" stop-color="#0e7490"/>
-                    </linearGradient>
-                  </defs>
-                  <rect width="160" height="110" fill="url(#skyP)"/>
+                  <rect width="160" height="110" fill="#0f172a"/>
                   <!-- City skyline -->
                   <rect x="0" y="55" width="12" height="55" fill="#1e293b"/>
                   <rect x="8" y="45" width="15" height="65" fill="#1e293b"/>
@@ -349,7 +320,7 @@
                   <rect x="127" y="53" width="3" height="3" fill="#60a5fa" opacity="0.5"/>
                   <rect x="135" y="43" width="3" height="3" fill="#fbbf24" opacity="0.7"/>
                   <!-- River -->
-                  <rect x="0" y="80" width="160" height="30" fill="url(#waterP)" opacity="0.8"/>
+                  <rect x="0" y="80" width="160" height="30" fill="#1e40af" opacity="0.8"/>
                   <!-- River shimmer -->
                   <path d="M0 85 Q40 82 80 85 Q120 88 160 85" fill="none" stroke="#7dd3fc" stroke-width="1" opacity="0.4"/>
                   <!-- Person 1 — walking along riverbank -->
