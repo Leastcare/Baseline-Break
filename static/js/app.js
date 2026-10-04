@@ -186,6 +186,9 @@ function renderDesktopSiteCard(site, analysis) {
   setText("dtSiteName",     analysis.site_name || site.name);
   setText("dtSiteLocation", analysis.location  || site.location);
 
+  // Update reading label to match real parameter
+  setText("dtReadingLabel", analysis.parameter_name || "Streamflow");
+
   // Timestamp
   const { date, time } = fmtTimestamp(analysis.timestamp);
   setText("dtReadingDate", date);
