@@ -334,7 +334,7 @@ canvas { display: block; }
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--dt-surface-3);
+  background: #0a2535;
   position: relative;
 }
 .dt-site-img-wrap svg {
@@ -524,20 +524,18 @@ canvas { display: block; }
 }
 .dt-why-item-img {
   width: 100%;
-  aspect-ratio: 4/3;
+  height: 90px;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--dt-surface-3);
-  display: block;
   position: relative;
+  flex-shrink: 0;
 }
 .dt-why-item-img svg {
+  position: absolute;
+  top: 0; left: 0;
   width: 100%;
   height: 100%;
   display: block;
-  border-radius: 10px;
-  position: absolute;
-  top: 0; left: 0;
 }
 .ecosystem-img { background: #0a3d1f; }
 .animals-img   { background: #0a2d3d; }
