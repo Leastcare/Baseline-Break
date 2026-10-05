@@ -1,11 +1,6 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   review.js  —  Human review submit (desktop + mobile)
-   ═══════════════════════════════════════════════════════════════════════ */
-
 "use strict";
 
 const ReviewModule = (() => {
-  /* ── POST /api/review ── */
   async function submit(seriesId, decision, note = "") {
     try {
       const res = await fetch("/api/review", {
@@ -22,20 +17,17 @@ const ReviewModule = (() => {
     }
   }
 
-  /* ── Wire desktop review buttons ── */
   function wireDesktop(seriesId) {
     const btns      = document.querySelectorAll(".dt-review-btn");
     const feedback  = document.getElementById("dtReviewFeedback");
     if (!btns.length) return;
 
     btns.forEach(btn => {
-      // Clone to remove any previous listeners
       const fresh = btn.cloneNode(true);
       btn.parentNode.replaceChild(fresh, btn);
 
       fresh.addEventListener("click", async () => {
         const decision = fresh.dataset.decision;
-        // Disable all while submitting
         document.querySelectorAll(".dt-review-btn").forEach(b => (b.disabled = true));
 
         const result = await submit(seriesId, decision);
@@ -53,7 +45,6 @@ const ReviewModule = (() => {
           } else {
             feedback.textContent = "⚠ Could not submit review right now.";
             feedback.style.color = "var(--dt-warn)";
-            // Re-enable on error
             document.querySelectorAll(".dt-review-btn")
               .forEach(b => (b.disabled = false));
           }
@@ -62,10 +53,7 @@ const ReviewModule = (() => {
     });
   }
 
-  /* ── Wire mobile result screen review ── */
   function wireMobileResult(seriesId, decision) {
-    // Mobile result is shown after the wizard completes;
-    // the decision is already captured from the tile selection.
     return submit(seriesId, decision);
   }
 

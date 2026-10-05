@@ -1,31 +1,23 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   map-module.js  —  Leaflet map: dark tiles, custom pins, river path
-   ═══════════════════════════════════════════════════════════════════════ */
-
 "use strict";
 
 const MapModule = (() => {
-  let _dtMap  = null;   // desktop map instance
-  let _mobMap = null;   // mobile map instance
+  let _dtMap  = null;
+  let _mobMap = null;
   let _markers = [];
   let _onSiteSelect = null;
 
-  /* ─── Tile layers (all free / no API key required) ───────────────── */
   const TILES = {
-    // Stadia Alidade Smooth Dark — genuinely dark, free, no key needed
     map: {
       url: "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
       attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a> © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
       subdomains: "",
       maxZoom: 20,
     },
-    // Esri World Imagery — free satellite, no key
     satellite: {
       url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       attribution: "© Esri, Maxar, Earthstar Geographics",
       maxZoom: 19,
     },
-    // Stadia Stamen Terrain — styled terrain, free
     terrain: {
       url: "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
       attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a>',
@@ -34,7 +26,6 @@ const MapModule = (() => {
     },
   };
 
-  /* ─── Status → colour ─────────────────────────────────────────────── */
   const STATUS_COLOR = {
     normal:        "#4ade80",
     needs_recheck: "#fbbf24",
@@ -51,7 +42,6 @@ const MapModule = (() => {
     no_data:       "No recent data",
   };
 
-  /* ─── Build a custom SVG marker icon ─────────────────────────────── */
   function _pinIcon(status, isSelected) {
     const col  = STATUS_COLOR[status] ?? "#6b7280";
     const glow = STATUS_GLOW[status]  ?? "transparent";
@@ -75,7 +65,6 @@ const MapModule = (() => {
     });
   }
 
-  /* ─── Build popup HTML ────────────────────────────────────────────── */
   function _popupHtml(site) {
     const col   = STATUS_COLOR[site.status] ?? "#6b7280";
     const label = STATUS_LABEL[site.status] ?? site.status;
@@ -102,7 +91,6 @@ const MapModule = (() => {
       </div>`;
   }
 
-  /* ─── Draw markers on a map instance ─────────────────────────────── */
   function _drawMarkers(mapInstance, sites, selectedId) {
     sites.forEach(site => {
       const icon   = _pinIcon(site.status, site.id === selectedId);
@@ -125,7 +113,6 @@ const MapModule = (() => {
     });
   }
 
-  /* ─── Pulse animation on selected pin ────────────────────────────── */
   function _refreshMarkers(sites, selectedId) {
     _markers.forEach(({ id, marker, mapInstance }) => {
       const site = sites.find(s => s.id === id);
@@ -136,10 +123,8 @@ const MapModule = (() => {
     });
   }
 
-  /* ─── Draw a subtle river poly-line ─────────────────────────────── */
   function _drawRiver(mapInstance, sites) {
     if (sites.length < 2) return;
-    // Sort by latitude so the line flows roughly north→south or connects meaningfully
     const sorted = [...sites].sort((a, b) => b.latitude - a.latitude);
     const latlngs = sorted.map(s => [s.latitude, s.longitude]);
     L.polyline(latlngs, {
@@ -151,13 +136,11 @@ const MapModule = (() => {
     }).addTo(mapInstance);
   }
 
-  /* ─── Initialise DESKTOP map ─────────────────────────────────────── */
   function initDesktop(containerId, sites, selectedId, onSelect) {
     _onSiteSelect = onSelect;
     const el = document.getElementById(containerId);
     if (!el) return;
 
-    // Center on the US roughly, or first site
     const center = sites.length
       ? [sites[0].latitude, sites[0].longitude]
       : [38.5, -96];
@@ -169,27 +152,21 @@ const MapModule = (() => {
       attributionControl: true,
     });
 
-    // Attribution styling
     _dtMap.attributionControl.setPrefix("");
 
-    // Default tile layer
     const tileLayer = L.tileLayer(TILES.map.url, {
       attribution: TILES.map.attribution,
       maxZoom: TILES.map.maxZoom,
     }).addTo(_dtMap);
 
-    // Store tile layer for switching
     _dtMap._currentTile = tileLayer;
     _dtMap._tiles = TILES;
 
-    // Custom zoom control (top-right)
     L.control.zoom({ position: "topright" }).addTo(_dtMap);
 
-    // Draw
     _drawMarkers(_dtMap, sites, selectedId);
     _drawRiver(_dtMap, sites);
 
-    // Fit to all sites
     if (sites.length > 1) {
       const bounds = L.latLngBounds(sites.map(s => [s.latitude, s.longitude]));
       _dtMap.fitBounds(bounds, { padding: [40, 40] });
@@ -198,7 +175,6 @@ const MapModule = (() => {
     return _dtMap;
   }
 
-  /* ─── Initialise MOBILE map ──────────────────────────────────────── */
   function initMobile(containerId, sites, selectedId, onSelect) {
     _onSiteSelect = onSelect;
     const el = document.getElementById(containerId);
@@ -228,7 +204,6 @@ const MapModule = (() => {
     }
   }
 
-  /* ─── Switch tile type (Map / Satellite / Terrain) ──────────────── */
   function switchTile(type) {
     if (!_dtMap) return;
     const cfg = TILES[type] ?? TILES.map;
@@ -239,12 +214,10 @@ const MapModule = (() => {
     _dtMap._currentTile.bringToBack();
   }
 
-  /* ─── Focus map on a site ────────────────────────────────────────── */
   function focusSite(siteId, sites) {
     const site = sites.find(s => s.id === siteId);
     if (!site || !_dtMap) return;
     _dtMap.setView([site.latitude, site.longitude], 9, { animate: true });
-    // Open its popup
     const entry = _markers.find(m => m.id === siteId && m.mapInstance === _dtMap);
     if (entry) {
       entry.marker.openPopup();
@@ -252,12 +225,10 @@ const MapModule = (() => {
     }
   }
 
-  /* ─── Exposed for inline popup button ───────────────────────────── */
   function _selectFromPopup(siteId) {
     if (_onSiteSelect) _onSiteSelect(siteId);
   }
 
-  /* ─── Trigger resize after container becomes visible ────────────── */
   function invalidate() {
     if (_dtMap)  setTimeout(() => _dtMap.invalidateSize(), 50);
     if (_mobMap) setTimeout(() => _mobMap.invalidateSize(), 50);

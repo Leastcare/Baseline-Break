@@ -1,8 +1,3 @@
-"""
-Baseline-Break · StreamWatch
-Entry point for the Flask application.
-"""
-
 import logging
 import os
 
@@ -17,13 +12,11 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # ── Set up logging ────────────────────────────────────────────────
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    # ── Wire the analysis pipeline ────────────────────────────────────
     from clients.usgs_client import USGSClient
     from services.analysis_service import AnalysisService
 
@@ -42,9 +35,6 @@ def create_app() -> Flask:
 
     app.config["ANALYSIS_SERVICE"] = analysis_svc
 
-    # ── Pre-warm analysis cache in background thread ──────────────────
-    # Runs analysis for all sites at startup so /api/sites immediately
-    # returns real statuses instead of 'unknown'.
     import threading
 
     def _prewarm():
@@ -62,7 +52,6 @@ def create_app() -> Flask:
     t = threading.Thread(target=_prewarm, daemon=True, name="prewarm")
     t.start()
 
-    # ── Register blueprints ───────────────────────────────────────────
     app.register_blueprint(pages_bp)
     app.register_blueprint(api_bp)
 
@@ -77,5 +66,4 @@ if __name__ == "__main__":
         debug = application.config.get("FLASK_DEBUG", False),
     )
 
-# Module-level app instance for Gunicorn (used by Render/Railway)
 app = create_app()

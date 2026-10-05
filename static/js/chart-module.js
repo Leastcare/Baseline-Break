@@ -1,7 +1,3 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   chart-module.js  —  Water Clarity Trend (Chart.js)
-   ═══════════════════════════════════════════════════════════════════════ */
-
 "use strict";
 
 const ChartModule = (() => {
@@ -13,7 +9,6 @@ const ChartModule = (() => {
   const GRID   = "rgba(45,212,191,0.06)";
   const TEXT   = "#7fa9b5";
 
-  /* ── Build a gradient fill for the observed line ── */
   function _makeGradient(ctx, chartArea) {
     const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
     g.addColorStop(0,   "rgba(45,212,191,0.35)");
@@ -22,16 +17,14 @@ const ChartModule = (() => {
     return g;
   }
 
-  /* ── Convert API trend array into Chart.js datasets ── */
   function _buildDatasets(trend, ctx, chartArea) {
-    const labels  = trend.map(p => p.date.slice(5));   // "MM-DD"
+    const labels  = trend.map(p => p.date.slice(5));
     const values  = trend.map(p => p.value);
     const alerts  = trend.map(p => p.alert ? p.value : null);
 
-    // Baseline band: we derive upper/lower from the non-spike portion
     const normal  = trend.filter(p => !p.alert).map(p => p.value);
     const center  = _median(normal);
-    const spread  = _mad(normal) * 1.4826 * 1.5;        // ±1.5σ band
+    const spread  = _mad(normal) * 1.4826 * 1.5;
     const upper   = trend.map(() => +(center + spread).toFixed(1));
     const lower   = trend.map(() => +(center - spread).toFixed(1));
 
@@ -40,7 +33,6 @@ const ChartModule = (() => {
     return {
       labels,
       datasets: [
-        // Shaded normal band — upper boundary (invisible line)
         {
           label: "_upper",
           data: upper,
@@ -50,7 +42,6 @@ const ChartModule = (() => {
           backgroundColor: BAND,
           tension: 0.4,
         },
-        // Shaded normal band — lower boundary (invisible line)
         {
           label: "_lower",
           data: lower,
@@ -59,7 +50,6 @@ const ChartModule = (() => {
           fill: false,
           tension: 0.4,
         },
-        // Normal range border (dashed)
         {
           label: "Normal range",
           data: upper,
@@ -70,18 +60,13 @@ const ChartModule = (() => {
           fill: false,
           tension: 0.4,
         },
-        // Observed line
         {
           label: "Observed value",
           data: values,
           borderColor: TEAL,
           borderWidth: 2.5,
-          pointBackgroundColor: trend.map(p =>
-            p.alert ? WARN : TEAL
-          ),
-          pointBorderColor: trend.map(p =>
-            p.alert ? WARN : TEAL
-          ),
+          pointBackgroundColor: trend.map(p => p.alert ? WARN : TEAL),
+          pointBorderColor: trend.map(p => p.alert ? WARN : TEAL),
           pointRadius: trend.map(p => p.alert ? 7 : 4),
           pointHoverRadius: 8,
           fill: true,
@@ -89,7 +74,6 @@ const ChartModule = (() => {
           tension: 0.4,
           z: 10,
         },
-        // Alert highlight dots (separate layer so they render on top)
         {
           label: "Alert",
           data: alerts,
@@ -105,7 +89,6 @@ const ChartModule = (() => {
     };
   }
 
-  /* ── Robust stats helpers ── */
   function _median(arr) {
     if (!arr.length) return 0;
     const s = [...arr].sort((a, b) => a - b);
@@ -117,7 +100,6 @@ const ChartModule = (() => {
     return _median(arr.map(v => Math.abs(v - med)));
   }
 
-  /* ── Initialise or re-draw chart ── */
   function init(canvasId, trend, unit) {
     _unit = unit || "";
     const canvas = document.getElementById(canvasId);
@@ -174,15 +156,11 @@ const ChartModule = (() => {
       },
       plugins: [
         {
-          // Rebuild gradient after initial render (needs chartArea)
           id: "gradientFill",
           afterLayout(chart) {
             const ds = chart.data.datasets.find(d => d.label === "Observed value");
             if (ds && chart.chartArea) {
-              ds.backgroundColor = _makeGradient(
-                chart.ctx,
-                chart.chartArea
-              );
+              ds.backgroundColor = _makeGradient(chart.ctx, chart.chartArea);
             }
           },
         },
@@ -190,6 +168,5 @@ const ChartModule = (() => {
     });
   }
 
-  /* ── Public API ── */
   return { init };
 })();

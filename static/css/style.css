@@ -1,36 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   StreamWatch Atlas · Baseline-Break
-   style.css
-
-   Structure:
-   1.  CSS custom properties (tokens)
-   2.  Reset & base
-   3.  Layout shell switcher (media query)
-   4.  DESKTOP — nav bar
-   5.  DESKTOP — main grid
-   6.  DESKTOP — map panel
-   7.  DESKTOP — site card
-   8.  DESKTOP — trend chart card
-   9.  DESKTOP — bottom row (why / at-a-glance)
-   10. DESKTOP — evidence + review panel
-   11. MOBILE  — shell & screen system
-   12. MOBILE  — status bar & header
-   13. MOBILE  — home screen
-   14. MOBILE  — check wizard screen
-   15. MOBILE  — result screen
-   16. MOBILE  — map screen
-   17. MOBILE  — bottom navigation
-   18. Shared utilities & badges
-   19. Leaflet overrides
-   20. Scrollbar
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-
-/* ─────────────────────────────────────────────────────────────────────────
-   1. CSS CUSTOM PROPERTIES
-   ───────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Desktop palette – deep teal / ocean */
   --dt-bg:           #061a24;
   --dt-surface:      #0a2535;
   --dt-surface-2:    #0d2e40;
@@ -53,7 +21,6 @@
   --dt-radius:       14px;
   --dt-radius-sm:    8px;
 
-  /* Mobile palette – deep purple / neon */
   --mob-bg:          #0d0520;
   --mob-surface:     rgba(15, 8, 35, 0.85);
   --mob-surface-2:   rgba(30, 15, 60, 0.9);
@@ -71,10 +38,6 @@
   --mob-radius-sm:   10px;
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   2. RESET & BASE
-   ───────────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -89,12 +52,6 @@ select { font: inherit; }
 img { display: block; max-width: 100%; }
 canvas { display: block; }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   3. LAYOUT SHELL SWITCHER
-   ───────────────────────────────────────────────────────────────────────── */
-
-/* Desktop shell visible ≥ 900 px; mobile hidden */
 .desktop-shell { display: flex; flex-direction: column; }
 .mobile-shell  { display: none; }
 
@@ -105,10 +62,6 @@ canvas { display: block; }
 
 .hidden { display: none !important; }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   4. DESKTOP — NAV BAR
-   ───────────────────────────────────────────────────────────────────────── */
 .desktop-shell {
   min-height: 100vh;
   background: var(--dt-bg);
@@ -129,7 +82,6 @@ canvas { display: block; }
   border-bottom: 1px solid var(--dt-border);
 }
 
-/* Brand */
 .dt-brand { display: flex; align-items: center; gap: 10px; min-width: 180px; flex-shrink: 0; }
 .dt-brand-icon svg { width: 36px; height: 36px; }
 .dt-brand-name {
@@ -148,7 +100,6 @@ canvas { display: block; }
   font-weight: 500;
 }
 
-/* Nav links */
 .dt-nav-links {
   display: flex;
   align-items: center;
@@ -175,7 +126,6 @@ canvas { display: block; }
   border: 1px solid var(--dt-border);
 }
 
-/* Meta widgets */
 .dt-nav-meta { display: flex; align-items: center; gap: 12px; }
 
 .dt-weather-widget,
@@ -195,10 +145,6 @@ canvas { display: block; }
 .dt-date { font-size: 0.75rem; font-weight: 600; color: var(--dt-text); }
 .dt-time { font-size: 0.65rem; color: var(--dt-text-muted); }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   5. DESKTOP — MAIN GRID
-   ───────────────────────────────────────────────────────────────────────── */
 .dt-main {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
@@ -223,15 +169,10 @@ canvas { display: block; }
   scroll-padding-top: 0;
 }
 
-/* Ensure the data column always starts at the top */
 .dt-data-col > *:first-child {
   scroll-margin-top: 0;
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   6. DESKTOP — MAP PANEL
-   ───────────────────────────────────────────────────────────────────────── */
 .dt-map-panel {
   background: var(--dt-surface);
   border: 1px solid var(--dt-border);
@@ -304,10 +245,6 @@ canvas { display: block; }
 .dt-legend-dot.nodata  { background: #6b7280; }
 .dt-legend-arrow { width: 12px; height: 12px; color: var(--dt-text-dim); margin-left: 2px; }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   7. DESKTOP — SITE CARD
-   ───────────────────────────────────────────────────────────────────────── */
 .dt-site-card {
   display: flex;
   align-items: center;
@@ -393,10 +330,6 @@ canvas { display: block; }
 }
 .dt-site-arrow:hover { color: var(--dt-teal); background: var(--dt-teal-glow); }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   8. DESKTOP — TREND CHART CARD
-   ───────────────────────────────────────────────────────────────────────── */
 .dt-chart-card {
   background: var(--dt-surface);
   border: 1px solid var(--dt-border);
@@ -471,17 +404,12 @@ canvas { display: block; }
   position: relative;
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   9. DESKTOP — BOTTOM ROW
-   ───────────────────────────────────────────────────────────────────────── */
 .dt-bottom-row {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   gap: 14px;
 }
 
-/* Why this matters */
 .dt-why-card {
   background: var(--dt-surface);
   border: 1px solid var(--dt-border);
@@ -551,7 +479,6 @@ canvas { display: block; }
 .dt-why-item-label svg { width: 14px; height: 14px; }
 .dt-why-item-text { font-size: 0.7rem; color: var(--dt-text-muted); line-height: 1.4; }
 
-/* At a glance */
 .dt-glance-card {
   background: var(--dt-surface);
   border: 1px solid var(--dt-border);
@@ -597,10 +524,6 @@ canvas { display: block; }
 .dt-glance-num.muted { color: var(--dt-text-muted); }
 .dt-glance-label { font-size: 0.7rem; color: var(--dt-text-muted); }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   10. DESKTOP — EVIDENCE + REVIEW PANEL
-   ───────────────────────────────────────────────────────────────────────── */
 .dt-evidence-panel {
   background: var(--dt-surface);
   border: 1px solid rgba(248, 113, 113, 0.3);
@@ -705,10 +628,6 @@ canvas { display: block; }
   border: 1px solid var(--dt-border);
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   11. MOBILE — SHELL & SCREEN SYSTEM
-   ───────────────────────────────────────────────────────────────────────── */
 .mobile-shell {
   width: 100vw;
   height: 100vh;
@@ -731,10 +650,6 @@ canvas { display: block; }
 }
 .mob-screen.active { display: flex; }
 
-/* Overlay tint on background images */
-
-/* bg-home.png is bright (purple/magenta sunset) — needs a stronger tint
-   so the white text and cards stay readable */
 .mob-screen-overlay {
   position: absolute;
   inset: 0;
@@ -747,7 +662,6 @@ canvas { display: block; }
   z-index: 0;
 }
 
-/* bg-check.png is already very dark at the bottom — lighter top tint only */
 .mob-screen-overlay.dark-overlay {
   background: linear-gradient(
     180deg,
@@ -757,8 +671,6 @@ canvas { display: block; }
   );
 }
 
-/* bg-result.png is bright green/golden — heavier overlay needed
-   especially at the bottom where the action buttons live */
 .mob-screen-overlay.result-overlay {
   background: linear-gradient(
     180deg,
@@ -778,14 +690,9 @@ canvas { display: block; }
   flex-direction: column;
   padding-bottom: calc(var(--mob-nav-h) + 12px);
 }
-/* Hide scrollbar on mobile */
 .mob-content::-webkit-scrollbar { display: none; }
 .mob-content { -ms-overflow-style: none; scrollbar-width: none; }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   12. MOBILE — STATUS BAR & HEADER
-   ───────────────────────────────────────────────────────────────────────── */
 .mob-statusbar {
   display: flex;
   justify-content: space-between;
@@ -874,10 +781,6 @@ canvas { display: block; }
   margin-top: 2px;
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   13. MOBILE — HOME SCREEN
-   ───────────────────────────────────────────────────────────────────────── */
 .mob-streak-hero {
   display: flex;
   align-items: center;
@@ -919,7 +822,6 @@ canvas { display: block; }
   flex-shrink: 0;
 }
 
-/* Weekly dots */
 .mob-week-row {
   display: flex;
   justify-content: center;
@@ -963,7 +865,6 @@ canvas { display: block; }
   border: 2px solid rgba(255,255,255,0.1);
 }
 
-/* Stats grid */
 .mob-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -999,7 +900,6 @@ canvas { display: block; }
   color: var(--mob-text-muted);
 }
 
-/* CTA button */
 .mob-cta-btn {
   width: 100%;
   padding: 16px;
@@ -1020,13 +920,8 @@ canvas { display: block; }
 .mob-cta-btn:hover  { transform: translateY(-1px); box-shadow: 0 0 32px rgba(34,211,238,0.55); }
 .mob-cta-btn:active { transform: translateY(0); }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   14. MOBILE — CHECK WIZARD SCREEN
-   ───────────────────────────────────────────────────────────────────────── */
 .mob-check-content { padding-top: 0; }
 
-/* Progress */
 .mob-progress-bar {
   display: flex;
   align-items: center;
@@ -1064,7 +959,6 @@ canvas { display: block; }
   flex-shrink: 0;
 }
 
-/* Question */
 .mob-question-wrap { margin-bottom: 20px; flex-shrink: 0; }
 .mob-question {
   font-size: 2rem;
@@ -1082,7 +976,6 @@ canvas { display: block; }
   line-height: 1.5;
 }
 
-/* Tiles */
 .mob-tiles-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1122,7 +1015,6 @@ canvas { display: block; }
   line-height: 1.3;
 }
 
-/* Examples link */
 .mob-examples-link {
   display: flex;
   align-items: center;
@@ -1138,7 +1030,6 @@ canvas { display: block; }
 .mob-examples-main { font-size: 0.82rem; font-weight: 600; color: var(--mob-cyan); }
 .mob-examples-sub  { font-size: 0.7rem; color: var(--mob-text-muted); margin-top: 2px; }
 
-/* Continue button */
 .mob-continue-btn {
   width: 100%;
   padding: 16px;
@@ -1162,10 +1053,6 @@ canvas { display: block; }
 }
 .mob-continue-btn:not(:disabled):hover { transform: translateY(-1px); }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   15. MOBILE — RESULT SCREEN
-   ───────────────────────────────────────────────────────────────────────── */
 .mob-result-content { justify-content: flex-start; }
 
 .mob-result-brand {
@@ -1278,10 +1165,6 @@ canvas { display: block; }
   color: var(--mob-cyan);
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   16. MOBILE — MAP SCREEN
-   ───────────────────────────────────────────────────────────────────────── */
 #mobMapScreen {
   background: var(--mob-bg);
 }
@@ -1311,10 +1194,6 @@ canvas { display: block; }
   min-height: 0;
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   17. MOBILE — BOTTOM NAVIGATION
-   ───────────────────────────────────────────────────────────────────────── */
 .mob-bottom-nav {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -1355,10 +1234,6 @@ canvas { display: block; }
 }
 .mob-nav-check-circle svg { width: 24px; height: 24px; }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   18. SHARED UTILITIES & BADGES
-   ───────────────────────────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1389,12 +1264,6 @@ canvas { display: block; }
   border: 1px solid rgba(248,113,113,0.3);
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   19. LEAFLET OVERRIDES
-   ───────────────────────────────────────────────────────────────────────── */
-
-/* Stadia dark tiles are already dark — no filter needed */
 .leaflet-tile-pane {
   filter: none;
 }
@@ -1404,7 +1273,6 @@ canvas { display: block; }
   font-family: inherit;
 }
 
-/* Custom pin tooltips */
 .leaflet-tooltip {
   background: rgba(6,26,36,0.95) !important;
   border: 1px solid var(--dt-border) !important;
@@ -1417,7 +1285,6 @@ canvas { display: block; }
 }
 .leaflet-tooltip::before { display: none !important; }
 
-/* Custom popup */
 .leaflet-popup-content-wrapper {
   background: rgba(6,26,36,0.97) !important;
   border: 1px solid var(--dt-border) !important;
@@ -1428,7 +1295,6 @@ canvas { display: block; }
 .leaflet-popup-tip { background: rgba(6,26,36,0.97) !important; }
 .leaflet-popup-close-button { color: var(--dt-text-muted) !important; }
 
-/* Remove default zoom control shadows */
 .leaflet-control-zoom a {
   background: var(--dt-surface) !important;
   border-color: var(--dt-border) !important;
@@ -1439,7 +1305,6 @@ canvas { display: block; }
   color: var(--dt-teal) !important;
 }
 
-/* Attribution */
 .leaflet-control-attribution {
   background: rgba(6,26,36,0.8) !important;
   color: var(--dt-text-dim) !important;
@@ -1447,14 +1312,9 @@ canvas { display: block; }
 }
 .leaflet-control-attribution a { color: var(--dt-teal) !important; }
 
-/* Mobile Leaflet — also no filter needed with Stadia dark */
 #mobMap .leaflet-tile-pane { filter: none; }
 #mobMap .leaflet-container { background: var(--mob-bg) !important; }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   20. SCROLLBAR  (desktop data column)
-   ───────────────────────────────────────────────────────────────────────── */
 .dt-data-col::-webkit-scrollbar { width: 4px; }
 .dt-data-col::-webkit-scrollbar-track { background: transparent; }
 .dt-data-col::-webkit-scrollbar-thumb {
@@ -1463,12 +1323,6 @@ canvas { display: block; }
 }
 .dt-data-col::-webkit-scrollbar-thumb:hover { background: var(--dt-teal); }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   21. DESKTOP — PANEL VIEWS (nav switching)
-   ───────────────────────────────────────────────────────────────────────── */
-
-/* All panels hidden by default, only .active shown */
 .dt-panel-view { display: none; flex-direction: column; gap: 14px; }
 .dt-panel-view.active { display: flex; }
 
@@ -1481,7 +1335,6 @@ canvas { display: block; }
   flex-shrink: 0;
 }
 
-/* ── Sites panel ── */
 .dt-sites-list { display: flex; flex-direction: column; gap: 10px; }
 .dt-site-row {
   display: flex;
@@ -1511,7 +1364,6 @@ canvas { display: block; }
 .dt-site-row-val  { font-size: 0.85rem; font-weight: 700; color: var(--dt-text); flex-shrink: 0; }
 .dt-site-row-arrow { color: var(--dt-text-muted); font-size: 1rem; flex-shrink: 0; }
 
-/* ── Trends panel ── */
 .dt-trends-grid { display: flex; flex-direction: column; gap: 12px; }
 .dt-trends-stats {
   display: grid;
@@ -1527,7 +1379,6 @@ canvas { display: block; }
 .dt-trends-stat-label { font-size: 0.68rem; color: var(--dt-text-muted); margin-bottom: 4px; }
 .dt-trends-stat-val   { font-size: 1rem; font-weight: 700; color: var(--dt-teal); }
 
-/* ── Community panel ── */
 .dt-community-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1565,7 +1416,6 @@ canvas { display: block; }
   font-style: italic;
 }
 
-/* ── Reports panel ── */
 .dt-reports-list { display: flex; flex-direction: column; gap: 10px; }
 .dt-report-row {
   background: var(--dt-surface);
@@ -1587,11 +1437,6 @@ canvas { display: block; }
 .dt-report-detail { font-size: 0.72rem; color: var(--dt-text-muted); margin-top: 3px; line-height: 1.4; }
 .dt-report-time { font-size: 0.68rem; color: var(--dt-text-dim); margin-top: 4px; }
 
-
-/* ─────────────────────────────────────────────────────────────────────────
-   22. SPLASH SCREEN
-   ───────────────────────────────────────────────────────────────────────── */
-
 .splash {
   position: fixed;
   inset: 0;
@@ -1611,7 +1456,6 @@ canvas { display: block; }
   pointer-events: none;
 }
 
-/* Background gradient */
 .splash-bg {
   position: absolute;
   inset: 0;
@@ -1621,7 +1465,6 @@ canvas { display: block; }
     radial-gradient(ellipse 60% 50% at 80% 70%, rgba(6,78,59,0.06) 0%, transparent 60%);
 }
 
-/* Animated river waves at bottom */
 .splash-river {
   position: absolute;
   bottom: 0;
@@ -1630,22 +1473,15 @@ canvas { display: block; }
   height: 200px;
 }
 
-.splash-wave-1 {
-  animation: waveFlow 4s ease-in-out infinite;
-}
-.splash-wave-2 {
-  animation: waveFlow 4s ease-in-out infinite 0.5s;
-}
-.splash-wave-3 {
-  animation: waveFlow 4s ease-in-out infinite 1s;
-}
+.splash-wave-1 { animation: waveFlow 4s ease-in-out infinite; }
+.splash-wave-2 { animation: waveFlow 4s ease-in-out infinite 0.5s; }
+.splash-wave-3 { animation: waveFlow 4s ease-in-out infinite 1s; }
 
 @keyframes waveFlow {
   0%, 100% { transform: translateX(0); }
   50%       { transform: translateX(-30px); }
 }
 
-/* Content area */
 .splash-content {
   position: relative;
   z-index: 1;
@@ -1656,7 +1492,6 @@ canvas { display: block; }
   text-align: center;
 }
 
-/* Logo */
 .splash-logo {
   width: 90px;
   height: 90px;
@@ -1695,7 +1530,6 @@ canvas { display: block; }
   100% { transform: scale(2.2); opacity: 0; }
 }
 
-/* Brand name */
 .splash-brand {
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 800;
@@ -1724,7 +1558,6 @@ canvas { display: block; }
   animation: splashFadeUp 0.6s ease 0.35s both;
 }
 
-/* Loading bar */
 .splash-loader-track {
   width: 200px;
   height: 2px;
@@ -1751,7 +1584,6 @@ canvas { display: block; }
   min-height: 1.2em;
 }
 
-/* Hackathon badge */
 .splash-badge {
   position: absolute;
   bottom: 24px;

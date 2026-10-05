@@ -1,12 +1,3 @@
-"""
-services/timeseries_service.py
-───────────────────────────────
-Fetches and normalises USGS observations into clean Python dicts.
-
-All datetime normalisation happens here. Everything downstream gets
-timezone-naive UTC datetimes or plain date strings.
-"""
-
 import logging
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
@@ -15,7 +6,6 @@ from clients.usgs_client import USGSClient, USGSError
 
 logger = logging.getLogger(__name__)
 
-# ── Parameter human names ────────────────────────────────────────────────
 PARAM_NAMES = {
     "00060": "Streamflow",
     "00065": "Gage height",
@@ -26,20 +16,16 @@ PARAM_NAMES = {
     "63680": "Turbidity",
 }
 
-# ── Statistic IDs we consider "instantaneous / mean" for display ─────────
-PREFERRED_STAT_IDS = {"00003", "00011", None}   # mean, instantaneous, none
+PREFERRED_STAT_IDS = {"00003", "00011", None}
 
 
 def _parse_iso(ts_str) -> Optional[datetime]:
-    """Parse an ISO timestamp string to UTC datetime. Returns None on failure."""
     if not ts_str:
         return None
     try:
         s = str(ts_str).strip()
-        # Handle date-only 'YYYY-MM-DD'
         if len(s) == 10:
             return datetime.strptime(s, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        # Handle timezone-aware ISO strings
         dt = datetime.fromisoformat(s)
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
@@ -49,7 +35,6 @@ def _parse_iso(ts_str) -> Optional[datetime]:
 
 
 def _safe_float(val) -> Optional[float]:
-    """Convert a value to float; return None if not possible."""
     try:
         return float(val)
     except (TypeError, ValueError):
@@ -57,15 +42,11 @@ def _safe_float(val) -> Optional[float]:
 
 
 def _normalise_observation(raw: dict) -> Optional[dict]:
-    """
-    Convert a raw USGS feature properties dict into a normalised observation.
-    Returns None if the record is unusable.
-    """
     value = _safe_float(raw.get("value"))
     if value is None:
         return None
     if value < 0:
-        return None   # negative discharge is physically impossible
+        return None
 
     ts = _parse_iso(raw.get("time"))
     if ts is None:
@@ -92,22 +73,14 @@ def _normalise_observation(raw: dict) -> Optional[dict]:
 
 
 class TimeseriesService:
-    """
-    High-level service for fetching and normalising USGS time series data.
-    """
-
     def __init__(self, client: USGSClient):
         self._client = client
 
     def get_site_info(self, site_number: str) -> Optional[dict]:
-        """
-        Return clean site metadata for a USGS site number like '02336000'.
-        """
         try:
             raw = self._client.get_site_metadata(site_number)
             if not raw:
                 return None
-            geo = None  # geometry comes from the feature, not properties
             return {
                 "monitoring_location_id":     f"USGS-{site_number}",
                 "monitoring_location_number": site_number,
@@ -127,11 +100,6 @@ class TimeseriesService:
         parameter_code: str = "00060",
         prefer_period: str = "Daily",
     ) -> Optional[str]:
-        """
-        Find the best time-series ID for a location + parameter.
-        Prefers the given period (Daily or Points) and primary flag.
-        Returns the ts_id string or None.
-        """
         try:
             rows = self._client.get_timeseries_metadata(
                 monitoring_location_id, parameter_code
@@ -143,7 +111,6 @@ class TimeseriesService:
         if not rows:
             return None
 
-        # Score each candidate
         def _score(row):
             score = 0
             period = (row.get("computation_period_identifier") or "").lower()
@@ -152,7 +119,6 @@ class TimeseriesService:
                 score += 10
             if "primary" in primary:
                 score += 5
-            # Prefer series with recent data
             end = _parse_iso(row.get("end"))
             if end:
                 days_old = (datetime.now(timezone.utc) - end).days
@@ -174,10 +140,6 @@ class TimeseriesService:
         return ts_id
 
     def get_latest_observation(self, ts_id: str) -> Optional[dict]:
-        """
-        Return the most recent normalised observation for a time series.
-        Falls back to the latest daily value if continuous is unavailable.
-        """
         try:
             raw = self._client.get_latest_continuous(ts_id)
             if raw:
@@ -187,14 +149,12 @@ class TimeseriesService:
         except USGSError as e:
             logger.warning("get_latest_continuous(%s) failed: %s", ts_id, e)
 
-        # Fallback: get the most recent daily value
         try:
             today     = date.today()
             start_str = (today - timedelta(days=7)).isoformat()
             end_str   = today.isoformat()
             rows      = self._client.get_daily_history(ts_id, start_str, end_str, max_records=10)
             if rows:
-                # Sort by time descending
                 valid = [_normalise_observation(r) for r in rows]
                 valid = [o for o in valid if o]
                 if valid:
@@ -209,10 +169,6 @@ class TimeseriesService:
         ts_id: str,
         days_back: int = 90,
     ) -> list[dict]:
-        """
-        Return up to `days_back` days of daily observations, sorted
-        oldest→newest. Values are normalised and deduplicated by date.
-        """
         today     = date.today()
         start_str = (today - timedelta(days=days_back)).isoformat()
         end_str   = today.isoformat()
@@ -225,11 +181,9 @@ class TimeseriesService:
             logger.error("get_historical_daily(%s) failed: %s", ts_id, e)
             return []
 
-        # Normalise
         obs_list = [_normalise_observation(r) for r in rows]
         obs_list = [o for o in obs_list if o is not None]
 
-        # Deduplicate by date (keep first occurrence per day)
         seen: set[str] = set()
         deduped = []
         for obs in obs_list:
@@ -237,7 +191,6 @@ class TimeseriesService:
                 seen.add(obs["date_str"])
                 deduped.append(obs)
 
-        # Sort oldest → newest
         deduped.sort(key=lambda o: o["timestamp"])
         logger.info(
             "get_historical_daily(%s): %d raw → %d clean points",

@@ -1,19 +1,3 @@
-"""
-algorithms/explanation.py
-──────────────────────────
-Generates human-readable explanation text for anomaly alerts.
-
-No jargon. No statistical terms in the output.
-A non-technical user should immediately understand why the system flagged
-this reading.
-
-Scientific honesty rules (from spec):
-  - Never say "pollution confirmed".
-  - Never say "water is unsafe".
-  - Use "may indicate", "could warrant review", "unusual relative to".
-  - Always name the data source and approval status.
-"""
-
 from algorithms.anomaly import AnomalyScore
 from algorithms.baseline import Baseline
 from algorithms.persistence import PersistenceResult
@@ -28,14 +12,9 @@ def build_explanation(
     site_name:   str = "",
     param_name:  str = "Streamflow",
 ) -> list[str]:
-    """
-    Return a list of plain-English explanation strings for an anomaly.
-    Each string is one bullet point in the UI.
-    """
     reasons: list[str] = []
     unit_str = f" {unit}" if unit else ""
 
-    # ── 1. What changed ───────────────────────────────────────────────
     direction_word = "above" if anomaly.direction == "above" else "below"
     pct_str = f"{abs(anomaly.deviation_pct):.0f}%"
 
@@ -51,13 +30,11 @@ def build_explanation(
             f"within the normal range for this site."
         )
 
-    # ── 2. Normal range context ───────────────────────────────────────
     reasons.append(
         f"Typical recent range for this site: "
         f"{baseline.lower:.1f}–{baseline.upper:.1f}{unit_str}."
     )
 
-    # ── 3. Persistence ────────────────────────────────────────────────
     if persistence.confirmed:
         reasons.append(
             f"The unusual pattern has persisted across "
@@ -70,7 +47,6 @@ def build_explanation(
             f"observation. Further observations are needed to confirm a sustained change."
         )
 
-    # ── 4. Baseline quality ───────────────────────────────────────────
     if not baseline.sufficient:
         reasons.append(
             f"Note: The baseline was built from only {baseline.n} observations. "
@@ -81,7 +57,6 @@ def build_explanation(
             f"Baseline built from {baseline.n} daily observations."
         )
 
-    # ── 5. Data provenance ────────────────────────────────────────────
     approval_note = f" (approval status: {approval})" if approval else ""
     reasons.append(f"Data source: USGS Water Data{approval_note}.")
 
@@ -94,7 +69,6 @@ def build_normal_explanation(
     unit:     str = "",
     param_name: str = "Streamflow",
 ) -> list[str]:
-    """Explanation for a reading that is within the normal range."""
     unit_str = f" {unit}" if unit else ""
     return [
         f"Current {param_name.lower()} ({anomaly.value:.1f}{unit_str}) is "
@@ -107,10 +81,6 @@ def build_normal_explanation(
 
 
 def one_health_context(direction: str, param_name: str = "Streamflow") -> dict:
-    """
-    Return carefully worded One Health context for the UI.
-    Never claims causation or medical impact.
-    """
     if direction == "above":
         ecosystem = (
             "A significant increase in streamflow can indicate heavy rainfall, "

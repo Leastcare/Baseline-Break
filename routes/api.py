@@ -1,9 +1,3 @@
-"""
-routes/api.py
-──────────────
-All /api/* endpoints.  Talks to AnalysisService — never directly to USGS.
-"""
-
 import json
 import logging
 import os
@@ -17,17 +11,11 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 
 def _svc():
-    """Retrieve the shared AnalysisService from the Flask app context."""
     return current_app.config["ANALYSIS_SERVICE"]
 
 
-# ─────────────────────────────────────────────────────────────────────────
-# Sites
-# ─────────────────────────────────────────────────────────────────────────
-
 @api_bp.route("/sites", methods=["GET"])
 def get_sites():
-    """Return the list of monitored sites with live status from cache."""
     from services.analysis_service import SITE_REGISTRY
     svc   = _svc()
     sites = svc.get_sites()
@@ -58,7 +46,6 @@ def get_sites():
 
 @api_bp.route("/site/<site_id>", methods=["GET"])
 def get_site(site_id: str):
-    """Return site metadata + latest cached analysis status."""
     from services.analysis_service import SITE_REGISTRY
     cfg = next((s for s in SITE_REGISTRY if s["id"] == site_id), None)
     if not cfg:
@@ -75,16 +62,8 @@ def get_site(site_id: str):
     })
 
 
-# ─────────────────────────────────────────────────────────────────────────
-# Analysis  (the core route)
-# ─────────────────────────────────────────────────────────────────────────
-
 @api_bp.route("/analyze/<site_id>", methods=["GET"])
 def analyze_site(site_id: str):
-    """
-    Run or return cached analysis for a site.
-    This is the route the frontend calls to get everything it needs.
-    """
     svc = _svc()
     result = svc.analyze(site_id)
 
@@ -105,13 +84,8 @@ def analyze_site(site_id: str):
     return jsonify(d)
 
 
-# ─────────────────────────────────────────────────────────────────────────
-# Human review
-# ─────────────────────────────────────────────────────────────────────────
-
 @api_bp.route("/review", methods=["POST"])
 def submit_review():
-    """Accept a human review decision and persist it."""
     data = request.get_json(silent=True) or {}
     required = {"series_id", "decision"}
     if not required.issubset(data.keys()):
@@ -132,10 +106,6 @@ def submit_review():
     logger.info("Review saved: %s %s", review["series_id"], review["decision"])
     return jsonify({"ok": True, "review_id": review["id"]}), 201
 
-
-# ─────────────────────────────────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────────────────────────────────
 
 def _new_id() -> str:
     import uuid

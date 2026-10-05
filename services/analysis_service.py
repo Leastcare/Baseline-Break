@@ -1,16 +1,3 @@
-"""
-services/analysis_service.py
-─────────────────────────────
-Orchestrates the full Baseline-Break detection pipeline:
-
-  USGS data  →  normalise  →  baseline  →  anomaly score
-             →  persistence check  →  explanation  →  AnalysisResult
-
-One AnalysisResult per (site, parameter) pair. Results are cached
-in-process for CACHE_TTL seconds so the UI can call /api/analyze
-on every page load without hammering USGS.
-"""
-
 import logging
 import time
 from dataclasses import asdict, dataclass
@@ -23,11 +10,6 @@ from services.timeseries_service import TimeseriesService
 
 logger = logging.getLogger(__name__)
 
-# ── Site registry ────────────────────────────────────────────────────────
-# Maps the app's site IDs → real USGS identifiers discovered in Phase 1.
-# Each entry includes both the daily ts_id (for baseline) and the
-# continuous ts_id (for latest reading).  If a ts_id is not known yet it
-# is looked up automatically via time-series-metadata.
 SITE_REGISTRY: list[dict] = [
     {
         "id":            "USGS-02336000",
@@ -122,9 +104,9 @@ class AnalysisResult:
     parameter_name:   str
     unit:             str
 
-    status:           str    # 'normal' | 'potential_break' | 'no_data' | 'insufficient_baseline'
+    status:           str
     current_value:    Optional[float]
-    timestamp:        Optional[str]   # ISO string
+    timestamp:        Optional[str]
     approval_status:  str
 
     baseline_median:  Optional[float]
@@ -135,22 +117,18 @@ class AnalysisResult:
     baseline_warning: Optional[str]
 
     anomaly_score:    Optional[float]
-    persistence:      int             # consecutive unusual points
-    direction:        str             # 'above' | 'below' | 'normal'
+    persistence:      int
+    direction:        str
     deviation_pct:    Optional[float]
 
     explanation:      list[str]
     one_health:       dict
 
-    trend:            list[dict]      # [{date, value, alert}, ...] last 30 days
-    error:            Optional[str]   # set if pipeline failed
+    trend:            list[dict]
+    error:            Optional[str]
 
 
 class AnalysisService:
-    """
-    Main analysis pipeline. One shared instance per Flask app.
-    """
-
     def __init__(
         self,
         usgs_client: USGSClient,
@@ -166,10 +144,7 @@ class AnalysisService:
         self._cache_ttl           = cache_ttl
         self._result_cache: dict[str, tuple[float, AnalysisResult]] = {}
 
-    # ── Public ────────────────────────────────────────────────────────
-
     def get_sites(self) -> list[dict]:
-        """Return the site list for /api/sites (lightweight, no USGS calls)."""
         return [
             {
                 "id":       s["id"],
@@ -183,10 +158,6 @@ class AnalysisService:
         ]
 
     def analyze(self, site_id: str) -> Optional[AnalysisResult]:
-        """
-        Run the full pipeline for a site. Returns cached result if fresh.
-        """
-        # Cache check
         cached = self._result_cache.get(site_id)
         if cached and (time.monotonic() - cached[0]) < self._cache_ttl:
             logger.debug("Analysis cache hit: %s", site_id)
@@ -201,11 +172,7 @@ class AnalysisService:
         return result
 
     def to_dict(self, result: AnalysisResult) -> dict:
-        """Serialise AnalysisResult to a JSON-safe dict."""
-        d = asdict(result)
-        return d
-
-    # ── Pipeline ──────────────────────────────────────────────────────
+        return asdict(result)
 
     def _run_pipeline(self, cfg: dict) -> AnalysisResult:
         site_id    = cfg["id"]
@@ -228,7 +195,6 @@ class AnalysisService:
         )
 
         def _make_result(status, current_value, timestamp, error=None, **kwargs):
-            """Merge static site fields with analysis-specific fields."""
             defaults = dict(
                 approval_status = "Unknown",
                 baseline_median = None,
@@ -255,7 +221,6 @@ class AnalysisService:
                 **defaults,
             )
 
-        # ── Step 1: Fetch historical daily observations ────────────────
         try:
             history = self._ts_svc.get_historical_daily(
                 cfg["ts_id_daily"], days_back=self._baseline_days
@@ -269,7 +234,6 @@ class AnalysisService:
             return _make_result("no_data", None, None,
                                 error="Not enough historical observations.")
 
-        # ── Step 2: Fetch latest observation ──────────────────────────
         try:
             latest = self._ts_svc.get_latest_observation(cfg["ts_id_cont"])
             if not latest and history:
@@ -286,37 +250,33 @@ class AnalysisService:
         current_ts      = latest["timestamp_iso"]
         approval_status = latest.get("approval_status", "Unknown")
 
-        # ── Step 3: Build baseline (exclude the latest point) ─────────
-        # Use history excluding today to avoid self-contamination
         baseline_obs = [h for h in history if h["date_str"] < latest["date_str"]]
         if not baseline_obs:
             baseline_obs = history[:-1] if len(history) > 1 else history
 
-        bl = baseline.build_from_observations(
-            baseline_obs, min_points=30
-        )
+        bl = baseline.build_from_observations(baseline_obs, min_points=30)
 
-        # ── Step 4: Score the latest observation ──────────────────────
         score = anomaly.score(current_value, bl, threshold=self._threshold)
 
-        # ── Step 5: Persistence check ─────────────────────────────────
+        history_with_latest = history.copy()
+        if not history_with_latest or history_with_latest[-1]["date_str"] != latest["date_str"]:
+            history_with_latest.append(latest)
+
         pers = persistence.check(
-            history,
+            history_with_latest,
             bl,
             threshold=self._threshold,
             required_consecutive=self._persistence_required,
             window=10,
         )
 
-        # ── Step 6: Determine status ──────────────────────────────────
         if not bl.sufficient:
             status = "insufficient_baseline"
-        elif score.is_anomalous and pers.consecutive_unusual >= 1:
+        elif score.is_anomalous and pers.confirmed:
             status = "potential_break"
         else:
             status = "normal"
 
-        # ── Step 7: Build explanation ──────────────────────────────────
         if status == "potential_break":
             expl = explanation.build_explanation(
                 score, bl, pers,
@@ -332,7 +292,6 @@ class AnalysisService:
 
         oh = explanation.one_health_context(score.direction, param_name)
 
-        # ── Step 8: Build trend (last 30 days for chart) ──────────────
         trend_obs = history[-30:]
         trend = []
         for obs in trend_obs:
@@ -343,7 +302,6 @@ class AnalysisService:
                 "alert": s.is_anomalous,
             })
 
-        # Append latest if it's not already in trend
         if trend and trend[-1]["date"] != latest["date_str"]:
             trend.append({
                 "date":  latest["date_str"],

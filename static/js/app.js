@@ -1,24 +1,9 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   app.js  —  StreamWatch Atlas · Baseline-Break
-   Orchestrates: API calls, desktop UI, mobile wizard, map, chart, review
-
-   All rendering reads live fields from the /api/analyze response.
-   AnalysisResult fields used:
-     status, current_value, unit, parameter_name, timestamp,
-     approval_status, baseline_median, baseline_lower, baseline_upper,
-     baseline_n, anomaly_score, persistence, direction, deviation_pct,
-     explanation, one_health, trend, error
-   ═══════════════════════════════════════════════════════════════════════ */
-
 "use strict";
 
-/* ───────────────────────────────────────────────────────────────────────
-   STATE
-   ─────────────────────────────────────────────────────────────────────── */
 const App = {
-  sites:          [],       // from /api/sites
+  sites:          [],
   selectedSiteId: null,
-  analysisCache:  {},       // siteId → AnalysisResult dict
+  analysisCache:  {},
   isMobile:       false,
   mapReady:       false,
 
@@ -30,9 +15,6 @@ const App = {
   },
 };
 
-/* ───────────────────────────────────────────────────────────────────────
-   HELPERS
-   ─────────────────────────────────────────────────────────────────────── */
 function isMobileLayout() {
   return window.innerWidth < 900;
 }
@@ -47,7 +29,6 @@ function setText(id, val) {
 function showEl(id)  { el(id)?.classList.remove("hidden"); }
 function hideEl(id)  { el(id)?.classList.add("hidden"); }
 
-/* Format ISO timestamp → { date, time } strings */
 function fmtTimestamp(iso) {
   if (!iso) return { date: "—", time: "—" };
   try {
@@ -67,14 +48,11 @@ function fmtNow() {
   };
 }
 
-/* Clean unit string for display — normalise ft³/s variants */
 function fmtUnit(raw) {
   if (!raw) return "";
-  // API returns "ft³/s" or "ft^3/s" — show as "ft³/s"
   return raw.replace("^3", "³");
 }
 
-/* Status from API → display label */
 function statusLabel(status) {
   return {
     normal:                "✓ Normal",
@@ -95,7 +73,6 @@ function statusBadgeClass(status) {
   }[status] ?? "badge-nodata";
 }
 
-/* Map API status → map pin status key */
 function toMapStatus(apiStatus) {
   return {
     normal:                "normal",
@@ -106,9 +83,6 @@ function toMapStatus(apiStatus) {
   }[apiStatus] ?? "no_data";
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   API CALLS
-   ─────────────────────────────────────────────────────────────────────── */
 async function fetchSites() {
   try {
     const r = await fetch("/api/sites");
@@ -122,18 +96,14 @@ async function fetchSites() {
 }
 
 async function fetchAnalysis(siteId) {
-  // Return cached result if present (cache busted on range change)
   if (App.analysisCache[siteId]) return App.analysisCache[siteId];
   try {
     const r = await fetch(`/api/analyze/${siteId}`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
     App.analysisCache[siteId] = d;
-
-    // Update the site's status in our local site list so map pins refresh
     const site = App.sites.find(s => s.id === siteId);
     if (site) site.status = d.status ?? "unknown";
-
     return d;
   } catch (e) {
     console.error("[App] fetchAnalysis failed:", siteId, e);
@@ -141,15 +111,11 @@ async function fetchAnalysis(siteId) {
   }
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   CLOCK
-   ─────────────────────────────────────────────────────────────────────── */
 function startClock() {
   function tick() {
     const { date, time } = fmtNow();
     setText("dtDate", date);
     setText("dtTime", time);
-    // Mobile status bar uses HH:MM 24h
     const t24 = new Date().toLocaleTimeString("en-US", {
       hour: "2-digit", minute: "2-digit", hour12: false,
     }).slice(0, 5);
@@ -159,9 +125,6 @@ function startClock() {
   setInterval(tick, 30_000);
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — LOADING STATE
-   ─────────────────────────────────────────────────────────────────────── */
 function showSiteCardLoading() {
   setText("dtSiteName",     "Loading…");
   setText("dtSiteLocation", "");
@@ -174,39 +137,27 @@ function showSiteCardLoading() {
   hideEl("dtReadingDelta");
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — SITE CARD  (driven entirely by AnalysisResult)
-   ─────────────────────────────────────────────────────────────────────── */
 function renderDesktopSiteCard(site, analysis) {
   if (!site || !analysis) return;
 
   const unit = fmtUnit(analysis.unit || site.unit || "");
 
-  // Site identity
   setText("dtSiteName",     analysis.site_name || site.name);
   setText("dtSiteLocation", analysis.location  || site.location);
-
-  // Update reading label to match real parameter
   setText("dtReadingLabel", analysis.parameter_name || "Streamflow");
 
-  // Timestamp
   const { date, time } = fmtTimestamp(analysis.timestamp);
   setText("dtReadingDate", date);
   setText("dtReadingTime", time);
 
-  // Reading value — uses dedicated #dtReadingNumber span
   setText("dtReadingNumber",
     analysis.current_value != null ? analysis.current_value.toFixed(1) : "—"
   );
   setText("dtReadingUnit", unit);
 
-  // Percentage delta from baseline — only shown for breaks
   const deltaEl = el("dtReadingDelta");
   if (deltaEl) {
-    if (
-      analysis.status === "potential_break" &&
-      analysis.deviation_pct != null
-    ) {
+    if (analysis.status === "potential_break" && analysis.deviation_pct != null) {
       const pct      = analysis.deviation_pct;
       const sign     = pct >= 0 ? "+" : "";
       const dirWord  = analysis.direction === "above" ? "Higher" : "Lower";
@@ -219,14 +170,12 @@ function renderDesktopSiteCard(site, analysis) {
     }
   }
 
-  // Status badge
   const badgeEl = el("dtStatusBadge");
   if (badgeEl) {
     badgeEl.className = `badge ${statusBadgeClass(analysis.status)}`;
     badgeEl.textContent = statusLabel(analysis.status);
   }
 
-  // Chart title and subtitle
   const paramName = analysis.parameter_name || "Streamflow";
   setText("dtChartTitle", `${paramName} Trend`);
   const trendCount = analysis.trend?.length ?? 0;
@@ -234,12 +183,10 @@ function renderDesktopSiteCard(site, analysis) {
     `Last ${trendCount} days · ${(analysis.site_name || site.name).split(" ").slice(0, 4).join(" ")}`
   );
 
-  // Chart — pass real trend array from API
   if (analysis.trend && analysis.trend.length) {
     ChartModule.init("dtTrendChart", analysis.trend, unit);
   }
 
-  // WHY? button on the site card arrow
   const arrowBtn = el("dtSiteArrow");
   if (arrowBtn) {
     if (analysis.status === "potential_break") {
@@ -257,40 +204,31 @@ function renderDesktopSiteCard(site, analysis) {
     }
   }
 
-  // Always hide evidence panel when switching site
   hideEl("dtEvidencePanel");
 
-  // Baseline warning (shown as a subtle note if baseline is short)
   if (analysis.baseline_warning) {
     console.warn("[App] Baseline warning:", analysis.baseline_warning);
   }
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — EVIDENCE PANEL
-   ─────────────────────────────────────────────────────────────────────── */
 function showEvidencePanel(analysis, unit) {
   const panel = el("dtEvidencePanel");
   if (!panel) return;
   showEl("dtEvidencePanel");
 
-  // Current reading
   const val = analysis.current_value != null
     ? `${analysis.current_value.toFixed(1)} ${unit}`
     : "—";
   setText("dtEvCurrent", val);
 
-  // Normal range
   const lo = analysis.baseline_lower != null ? analysis.baseline_lower.toFixed(1) : "—";
   const hi = analysis.baseline_upper != null ? analysis.baseline_upper.toFixed(1) : "—";
   setText("dtEvRange", `${lo} – ${hi} ${unit}`);
 
-  // Anomaly score
   setText("dtEvScore",
     analysis.anomaly_score != null ? analysis.anomaly_score.toFixed(2) : "—"
   );
 
-  // Explanation bullets
   const reasonsEl = el("dtEvReasons");
   if (reasonsEl) {
     reasonsEl.innerHTML = (analysis.explanation ?? [])
@@ -298,10 +236,8 @@ function showEvidencePanel(analysis, unit) {
       .join("");
   }
 
-  // Wire review buttons with the real site ID
   ReviewModule.wireDesktop(App.selectedSiteId);
 
-  // Reset feedback state
   const fb = el("dtReviewFeedback");
   if (fb) { hideEl("dtReviewFeedback"); fb.textContent = ""; }
   document.querySelectorAll(".dt-review-btn").forEach(b => (b.disabled = false));
@@ -314,7 +250,6 @@ function wireEvidenceClose() {
   if (btn) btn.onclick = () => hideEl("dtEvidencePanel");
 }
 
-/* Minimal HTML escaping for explanation strings */
 function escHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -322,9 +257,6 @@ function escHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — AT A GLANCE STATS
-   ─────────────────────────────────────────────────────────────────────── */
 function renderGlanceStats(sites) {
   const total   = sites.length;
   const recheck = sites.filter(s =>
@@ -341,20 +273,13 @@ function renderGlanceStats(sites) {
   setText("dtNoDataCount",  nodata);
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — MAP PINS  (refresh after analysis loads)
-   ─────────────────────────────────────────────────────────────────────── */
 function buildMapSites(sites) {
-  // Convert API status values to the format MapModule expects
   return sites.map(s => ({
     ...s,
     status: toMapStatus(s.status),
   }));
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — NAV LINKS  (panel switching)
-   ─────────────────────────────────────────────────────────────────────── */
 const DT_PANELS = {
   overview:  "panelOverview",
   sites:     "panelSites",
@@ -364,19 +289,15 @@ const DT_PANELS = {
 };
 
 function switchDesktopPanel(page) {
-  // Hide all panels
   Object.values(DT_PANELS).forEach(id => {
     el(id)?.classList.remove("active");
   });
-  // Show target panel
   const targetId = DT_PANELS[page] ?? "panelOverview";
   el(targetId)?.classList.add("active");
 
-  // Scroll data column to top
   const dataCol = document.querySelector(".dt-data-col");
   if (dataCol) dataCol.scrollTop = 0;
 
-  // Populate panel if needed
   if (page === "sites")     renderSitesPanel();
   if (page === "trends")    renderTrendsPanel();
   if (page === "community") renderCommunityPanel();
@@ -395,7 +316,6 @@ function wireDesktopNav() {
   });
 }
 
-/* ── Sites panel ─────────────────────────────────────────────────────── */
 function renderSitesPanel() {
   const container = el("dtSitesList");
   if (!container || !App.sites.length) return;
@@ -405,7 +325,6 @@ function renderSitesPanel() {
     const valStr  = cached?.current_value != null
       ? `${cached.current_value.toFixed(1)} ${fmtUnit(cached.unit || "")}`
       : "—";
-    const dotCls  = toMapStatus(status);
     return `
       <div class="dt-site-row" onclick="selectSite('${site.id}'); switchDesktopPanel('overview'); document.querySelectorAll('.dt-nav-link').forEach(l => l.classList.toggle('active', l.dataset.page==='overview'))">
         <span class="dt-site-row-dot ${status}"></span>
@@ -419,7 +338,6 @@ function renderSitesPanel() {
   }).join("");
 }
 
-/* ── Trends panel ────────────────────────────────────────────────────── */
 function renderTrendsPanel() {
   if (!App.selectedSiteId) return;
   const analysis = App.analysisCache[App.selectedSiteId];
@@ -438,13 +356,11 @@ function renderTrendsPanel() {
   setText("dtTrendsScore", analysis.anomaly_score != null ? analysis.anomaly_score.toFixed(2) : "—");
 
   if (analysis.trend?.length) {
-    // Destroy previous chart on this canvas if any
     const canvas = el("dtTrendsChart");
     if (canvas) ChartModule.init("dtTrendsChart", analysis.trend, unit);
   }
 }
 
-/* ── Community panel ─────────────────────────────────────────────────── */
 function renderCommunityPanel() {
   if (!App.selectedSiteId) return;
   const analysis = App.analysisCache[App.selectedSiteId];
@@ -457,7 +373,6 @@ function renderCommunityPanel() {
   if (oh.disclaimer)  setText("dtCommunityDisclaimer", oh.disclaimer);
 }
 
-/* ── Reports panel ───────────────────────────────────────────────────── */
 function renderReportsPanel() {
   const container = el("dtReportsList");
   if (!container) return;
@@ -496,9 +411,6 @@ function renderReportsPanel() {
   }).join("");
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — MAP TILE SWITCHER
-   ─────────────────────────────────────────────────────────────────────── */
 function wireMapTypeBtns() {
   document.querySelectorAll(".dt-map-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -510,15 +422,11 @@ function wireMapTypeBtns() {
   });
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   DESKTOP — RANGE DROPDOWN
-   ─────────────────────────────────────────────────────────────────────── */
 function wireRangeDropdown() {
   const sel = el("dtRangeSelect");
   if (!sel) return;
   sel.addEventListener("change", async () => {
     if (!App.selectedSiteId) return;
-    // Bust cache and re-fetch
     delete App.analysisCache[App.selectedSiteId];
     const analysis = await fetchAnalysis(App.selectedSiteId);
     if (analysis?.trend?.length) {
@@ -532,29 +440,21 @@ function wireRangeDropdown() {
   });
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   SITE SELECTION  (desktop + mobile shared)
-   ─────────────────────────────────────────────────────────────────────── */
 async function selectSite(siteId) {
   App.selectedSiteId = siteId;
   const site = App.sites.find(s => s.id === siteId);
   if (!site) return;
 
-  // Scroll data column to top
   const dataCol = document.querySelector(".dt-data-col");
   if (dataCol) dataCol.scrollTop = 0;
 
-  // Show loading state immediately
   showSiteCardLoading();
 
-  // Update mobile pill
   setText("mobPillName", site.name);
   setText("mobPillLoc",  site.location);
 
-  // Focus map on this site
   MapModule.focusSite(siteId, buildMapSites(App.sites));
 
-  // Fetch real analysis from API
   const analysis = await fetchAnalysis(siteId);
   if (!analysis) {
     setText("dtSiteName", site.name);
@@ -567,28 +467,22 @@ async function selectSite(siteId) {
     return;
   }
 
-  // ── Desktop card ──────────────────────────────────────────────────
   renderDesktopSiteCard(site, analysis);
 
-  // After analysis loads, refresh map pins with real status
   MapModule.focusSite(siteId, buildMapSites(App.sites));
 
-  // Update glance stats with live statuses
   renderGlanceStats(App.sites);
 
-  // If Trends/Community/Reports panels are open, refresh them too
   const activePanel = document.querySelector(".dt-panel-view.active");
   if (activePanel?.id === "panelTrends")    renderTrendsPanel();
   if (activePanel?.id === "panelCommunity") renderCommunityPanel();
   if (activePanel?.id === "panelReports")   renderReportsPanel();
 
-  // ── Mobile result screen ──────────────────────────────────────────
   const unit = fmtUnit(analysis.unit || site.unit || "");
   setText("mobResultSiteName", analysis.site_name || site.name);
   const { date, time } = fmtTimestamp(analysis.timestamp);
   setText("mobResultSiteDate", `${date} · ${time}`);
 
-  // Result headline and observation text
   const mobHeadline = document.querySelector(".mob-result-headline");
   const mobObs      = el("mobResultObsText");
 
@@ -601,7 +495,6 @@ async function selectSite(siteId) {
       `${Math.abs(analysis.deviation_pct ?? 0).toFixed(0)}% ` +
       `${analysis.direction === "above" ? "above" : "below"} ` +
       `the normal range. Please review the observation.`;
-    // Swap result circle to amber/red
     const circle = document.querySelector(".mob-result-circle");
     if (circle) circle.style.filter = "drop-shadow(0 0 20px rgba(251,191,36,0.6))";
     if (circle) {
@@ -615,15 +508,11 @@ async function selectSite(siteId) {
       `YOUR REPORT <span class="mob-result-accent">MATCHES</span><br>this stream's normal pattern`;
     if (mobObs) mobObs.textContent =
       `${analysis.explanation?.[0] ?? "Your observation is within the usual range for this site. Thanks for checking!"}`;
-    // Reset circle to green
     const circle = document.querySelector(".mob-result-circle");
     if (circle) circle.style.filter = "drop-shadow(0 0 20px rgba(74,222,128,0.5))";
   }
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   MOBILE — SCREEN NAVIGATION
-   ─────────────────────────────────────────────────────────────────────── */
 const MOB_SCREENS = {
   home:    "mobHome",
   check:   "mobCheckScreen",
@@ -676,9 +565,6 @@ function wireMobileNav() {
   el("mobSitePill")?.addEventListener("click",  () => showMobScreen("map"));
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   MOBILE — CHECK WIZARD
-   ─────────────────────────────────────────────────────────────────────── */
 function resetWizard() {
   App.wizard = { step: 1, total: 6, answers: {}, selected: null };
   updateWizardUI();
@@ -716,26 +602,20 @@ function wireContinueBtn() {
     App.wizard.step = Math.min(App.wizard.step + 1, App.wizard.total);
     updateWizardUI();
 
-    // Map tile selection to a review decision
     const decision = App.wizard.selected === "clear" ? "confirmed" : "unsure";
     await ReviewModule.wireMobileResult(App.selectedSiteId ?? "unknown", decision);
 
-    // Navigate to result — content already populated by selectSite()
     showMobScreen("result");
   });
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   MOBILE — WEEKLY STREAK  (UI display only — no real data needed)
-   ─────────────────────────────────────────────────────────────────────── */
 function renderWeekRow() {
   const container = el("mobWeekRow");
   if (!container) return;
 
   const days      = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const today     = new Date().getDay();          // 0=Sun…6=Sat
-  const todayMon  = (today + 6) % 7;             // 0=Mon…6=Sun
-  // Mark all days before today as done
+  const today     = new Date().getDay();
+  const todayMon  = (today + 6) % 7;
   const checkSvg  = (col) =>
     `<svg viewBox="0 0 16 16" width="16"><path d="M3 8l4 4 6-6" stroke="${col}" stroke-width="1.5" fill="none"/></svg>`;
 
@@ -758,9 +638,6 @@ function renderWeekRow() {
   }).join("");
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   BOOT
-   ─────────────────────────────────────────────────────────────────────── */
 async function boot() {
   App.isMobile = isMobileLayout();
 
@@ -774,32 +651,25 @@ async function boot() {
   wireContinueBtn();
   renderWeekRow();
 
-  // ── Load sites ────────────────────────────────────────────────────
   App.sites = await fetchSites();
   if (!App.sites.length) {
     console.warn("[App] No sites returned from /api/sites");
     return;
   }
 
-  // Initial glance stats (may show 'unknown' status until analyses load)
   renderGlanceStats(App.sites);
 
-  // ── Init desktop map ──────────────────────────────────────────────
   if (!App.isMobile) {
     MapModule.initDesktop("dtMap", buildMapSites(App.sites), null, selectSite);
   }
 
-  // ── Select default site ───────────────────────────────────────────
-  // Prefer a site already known to need review; fall back to first
   const defaultSite =
     App.sites.find(s => s.status === "potential_break" || s.status === "needs_recheck")
     ?? App.sites[0];
   await selectSite(defaultSite.id);
 
-  // ── Background: pre-fetch remaining sites so map pins get real status
   _prefetchRemainingAnalyses();
 
-  // ── Resize handler ────────────────────────────────────────────────
   window.addEventListener("resize", () => {
     const nowMobile = isMobileLayout();
     if (nowMobile !== App.isMobile) {
@@ -809,23 +679,16 @@ async function boot() {
   });
 }
 
-/* Pre-fetch analysis for all sites in the background so map pins
-   show real colours without waiting for the user to select each one. */
 async function _prefetchRemainingAnalyses() {
   const remaining = App.sites.filter(s => s.id !== App.selectedSiteId);
   for (const site of remaining) {
     await fetchAnalysis(site.id);
-    // Refresh map and glance stats after each one comes in
     MapModule.initDesktop("dtMap", buildMapSites(App.sites), App.selectedSiteId, selectSite);
     renderGlanceStats(App.sites);
-    // Small yield so we don't block UI
     await new Promise(r => setTimeout(r, 200));
   }
 }
 
-/* ───────────────────────────────────────────────────────────────────────
-   SPLASH SCREEN
-   ─────────────────────────────────────────────────────────────────────── */
 function runSplash(onDone) {
   const splash = document.getElementById("splashScreen");
   const fill   = document.getElementById("splashLoaderFill");
@@ -847,14 +710,12 @@ function runSplash(onDone) {
     }, delay);
   });
 
-  // Fade out after 2.6s, then run boot()
   setTimeout(() => {
     splash.classList.add("hidden");
     setTimeout(onDone, 650);
   }, 2600);
 }
 
-/* ── Wait for DOM then splash → boot ── */
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => runSplash(boot));
 } else {

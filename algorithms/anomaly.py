@@ -1,33 +1,16 @@
-"""
-algorithms/anomaly.py
-──────────────────────
-Robust anomaly scoring.
-
-Produces a 'robust z-score' (also called modified z-score):
-
-    score = (current_value - baseline_median) / (1.4826 * baseline_MAD)
-
-Interpretation:
-  |score| < 2   → well within normal range
-  2 ≤ |score| < threshold → borderline, worth watching
-  |score| ≥ threshold     → anomalous
-
-The threshold is configurable; the spec recommends 3.5 as a starting point.
-"""
-
 from dataclasses import dataclass
 from algorithms.baseline import Baseline, MAD_SCALE
 
 
 @dataclass
 class AnomalyScore:
-    value:          float   # the measurement being evaluated
-    score:          float   # robust z-score (can be negative)
-    abs_score:      float   # |score|
-    threshold:      float   # threshold used
-    is_anomalous:   bool    # True if |score| >= threshold
-    direction:      str     # 'above', 'below', or 'normal'
-    deviation_pct:  float   # % deviation from baseline median
+    value:          float
+    score:          float
+    abs_score:      float
+    threshold:      float
+    is_anomalous:   bool
+    direction:      str
+    deviation_pct:  float
 
 
 def score(
@@ -35,19 +18,7 @@ def score(
     baseline: Baseline,
     threshold: float = 3.5,
 ) -> AnomalyScore:
-    """
-    Compute the anomaly score for current_value against a Baseline.
-
-    Args:
-        current_value: the most-recent measurement
-        baseline:      the Baseline object for this site
-        threshold:     robust z-score cutoff for anomaly
-
-    Returns:
-        AnomalyScore dataclass
-    """
     if baseline.sigma == 0:
-        # Edge case: completely flat baseline
         raw_score = 0.0
     else:
         raw_score = (current_value - baseline.median) / baseline.sigma
