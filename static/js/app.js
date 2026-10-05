@@ -823,9 +823,40 @@ async function _prefetchRemainingAnalyses() {
   }
 }
 
-/* ── Wait for DOM ── */
+/* ───────────────────────────────────────────────────────────────────────
+   SPLASH SCREEN
+   ─────────────────────────────────────────────────────────────────────── */
+function runSplash(onDone) {
+  const splash = document.getElementById("splashScreen");
+  const fill   = document.getElementById("splashLoaderFill");
+  const text   = document.getElementById("splashLoaderText");
+  if (!splash) { onDone(); return; }
+
+  const steps = [
+    { pct: 20,  msg: "Connecting to USGS Water Data...",   delay: 100  },
+    { pct: 45,  msg: "Fetching river monitoring sites...", delay: 500  },
+    { pct: 65,  msg: "Building site baselines...",         delay: 1000 },
+    { pct: 85,  msg: "Running anomaly detection...",       delay: 1600 },
+    { pct: 100, msg: "Ready.",                             delay: 2100 },
+  ];
+
+  steps.forEach(({ pct, msg, delay }) => {
+    setTimeout(() => {
+      if (fill) fill.style.width = pct + "%";
+      if (text) text.textContent = msg;
+    }, delay);
+  });
+
+  // Fade out after 2.6s, then run boot()
+  setTimeout(() => {
+    splash.classList.add("hidden");
+    setTimeout(onDone, 650);
+  }, 2600);
+}
+
+/* ── Wait for DOM then splash → boot ── */
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", boot);
+  document.addEventListener("DOMContentLoaded", () => runSplash(boot));
 } else {
-  boot();
+  runSplash(boot);
 }

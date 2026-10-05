@@ -12,9 +12,61 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- App styles -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6" />
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SPLASH SCREEN
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="splashScreen" class="splash">
+  <div class="splash-bg"></div>
+
+  <!-- Animated river -->
+  <svg class="splash-river" viewBox="0 0 1200 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path class="splash-wave-1" d="M0 100 Q150 60 300 100 Q450 140 600 100 Q750 60 900 100 Q1050 140 1200 100 L1200 200 L0 200 Z" fill="#2dd4bf" opacity="0.08"/>
+    <path class="splash-wave-2" d="M0 110 Q200 70 400 110 Q600 150 800 110 Q1000 70 1200 110 L1200 200 L0 200 Z" fill="#2dd4bf" opacity="0.06"/>
+    <path class="splash-wave-3" d="M0 120 Q250 80 500 120 Q750 160 1000 120 Q1100 100 1200 120 L1200 200 L0 200 Z" fill="#2dd4bf" opacity="0.1"/>
+  </svg>
+
+  <div class="splash-content">
+    <!-- Logo mark -->
+    <div class="splash-logo">
+      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="38" fill="none" stroke="#2dd4bf" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="40" cy="40" r="28" fill="none" stroke="#2dd4bf" stroke-width="1" opacity="0.2"/>
+        <!-- Water waves -->
+        <path d="M14 40 Q22 30 30 40 Q38 50 46 40 Q54 30 66 40" stroke="#2dd4bf" stroke-width="2.5" fill="none" stroke-linecap="round" class="splash-logo-wave"/>
+        <path d="M14 50 Q22 40 30 50 Q38 60 46 50 Q54 40 66 50" stroke="#2dd4bf" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <!-- Center dot -->
+        <circle cx="40" cy="40" r="4" fill="#2dd4bf" class="splash-dot"/>
+        <!-- Pulse rings -->
+        <circle cx="40" cy="40" r="10" fill="none" stroke="#2dd4bf" stroke-width="1" opacity="0.4" class="splash-pulse-1"/>
+        <circle cx="40" cy="40" r="18" fill="none" stroke="#2dd4bf" stroke-width="0.8" opacity="0.2" class="splash-pulse-2"/>
+      </svg>
+    </div>
+
+    <!-- Brand name -->
+    <div class="splash-brand">
+      <span class="splash-stream">Stream</span><span class="splash-watch">Watch</span>
+      <span class="splash-atlas">Atlas</span>
+    </div>
+    <div class="splash-tagline">CLEANER STREAMS &nbsp;·&nbsp; HEALTHIER COMMUNITIES</div>
+
+    <!-- Loading bar -->
+    <div class="splash-loader-track">
+      <div class="splash-loader-fill" id="splashLoaderFill"></div>
+    </div>
+    <div class="splash-loader-text" id="splashLoaderText">Connecting to USGS Water Data…</div>
+  </div>
+
+  <!-- Hackathon badge -->
+  <div class="splash-badge">
+    <svg viewBox="0 0 16 16" width="14"><path d="M8 1l1.5 3 3.5.5-2.5 2.5.5 3.5L8 9l-3 1.5.5-3.5L3 4.5 6.5 4z" fill="#fbbf24" opacity="0.8"/></svg>
+    OneAquaHealth IEEE Global Hackathon 2026
+  </div>
+</div>
+<!-- /splash -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      DESKTOP LAYOUT  (≥ 900 px)
